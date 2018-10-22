@@ -60,11 +60,11 @@ MmWaveUeNetDevice::GetTypeId (void)
 	    TypeId ("ns3::MmWaveUeNetDevice")
 	    .SetParent<MmWaveNetDevice> ()
 	    .AddConstructor<MmWaveUeNetDevice> ()
-		.AddAttribute ("EpcUeNas",
+		.AddAttribute ("NgcUeNas",
 		                   "The NAS associated to this UeNetDevice",
 		                   PointerValue (),
 		                   MakePointerAccessor (&MmWaveUeNetDevice::m_nas),
-		                   MakePointerChecker <EpcUeNas> ())
+		                   MakePointerChecker <NgcUeNas> ())
 		.AddAttribute ("mmWaveUeRrc",
 		                   "The RRC associated to this UeNetDevice",
 		                   PointerValue (),
@@ -189,7 +189,7 @@ MmWaveUeNetDevice::GetMac (void) const
 	return m_mac;
 }
 
-Ptr<EpcUeNas>
+Ptr<NgcUeNas>
 MmWaveUeNetDevice::GetNas (void) const
 {
   NS_LOG_FUNCTION (this);

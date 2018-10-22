@@ -17,7 +17,7 @@
  */
 
 #include "ns3/mmwave-helper.h"
-#include "ns3/epc-helper.h"
+#include "ns3/ngc-helper.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
@@ -26,7 +26,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/point-to-point-helper.h"
 #include "ns3/config-store.h"
-#include "ns3/mmwave-point-to-point-epc-helper.h"
+#include "ns3/mmwave-point-to-point-ngc-helper.h"
 //#include "ns3/gtk-config-store.h"
 #include <ns3/buildings-helper.h>
 #include <ns3/buildings-module.h>
@@ -449,11 +449,11 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::LteRlcUmLowLat::ReportBufferStatusTimer", TimeValue(MicroSeconds(100.0)));
   Config::SetDefault ("ns3::LteEnbRrc::SrsPeriodicity", UintegerValue (320));
   Config::SetDefault ("ns3::LteEnbRrc::FirstSibTime", UintegerValue (2));
-  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::X2LinkDelay", TimeValue (MicroSeconds(x2Latency)));
-  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::X2LinkDataRate", DataRateValue(DataRate ("1000Gb/s")));
-  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::X2LinkMtu",  UintegerValue(10000));
-  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::S1uLinkDelay", TimeValue (MicroSeconds(1000)));
-  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::S1apLinkDelay", TimeValue (MicroSeconds(mmeLatency)));
+  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::X2LinkDelay", TimeValue (MicroSeconds(x2Latency)));
+  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::X2LinkDataRate", DataRateValue(DataRate ("1000Gb/s")));
+  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::X2LinkMtu",  UintegerValue(10000));
+  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::S1uLinkDelay", TimeValue (MicroSeconds(1000)));
+  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::S1apLinkDelay", TimeValue (MicroSeconds(mmeLatency)));
   Config::SetDefault ("ns3::McStatsCalculator::MmWaveOutputFilename", StringValue                 (path + version + mmWaveOutName + "_" + seedSetStr + "_" + runSetStr + "_" + time_str + extension));
   Config::SetDefault ("ns3::McStatsCalculator::LteOutputFilename", StringValue                    (path + version + lteOutName    + "_" + seedSetStr + "_" + runSetStr + "_" + time_str + extension));
   Config::SetDefault ("ns3::McStatsCalculator::CellIdInTimeOutputFilename", StringValue           (path + version + cellIdInTimeOutName    + "_" + seedSetStr + "_" + runSetStr + "_" + time_str + extension));
@@ -534,8 +534,8 @@ main (int argc, char *argv[])
 
   //Ptr<MmWaveHelper> mmwaveHelper = CreateObject<MmWaveHelper> ();
   //mmwaveHelper->SetSchedulerType ("ns3::MmWaveFlexTtiMaxWeightMacScheduler");
-  Ptr<MmWavePointToPointEpcHelper> epcHelper = CreateObject<MmWavePointToPointEpcHelper> ();
-  mmwaveHelper->SetEpcHelper (epcHelper);
+  Ptr<MmWavePointToPointNgcHelper> ngcHelper = CreateObject<MmWavePointToPointNgcHelper> ();
+  mmwaveHelper->SetNgcHelper (ngcHelper);
   mmwaveHelper->SetHarqEnabled (harqEnabled);
 //  mmwaveHelper->SetAttribute ("PathlossModel", StringValue ("ns3::BuildingsObstaclePropagationLossModel"));
   mmwaveHelper->Initialize();
@@ -546,20 +546,20 @@ main (int argc, char *argv[])
   // parse again so you can override default values from the command line
   cmd.Parse(argc, argv);
 
-   // Get SGW/PGW and create a single RemoteHost 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+   // Get SMF/UPF and create a single RemoteHost 
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
   NodeContainer remoteHostContainer;
   remoteHostContainer.Create (1);
   Ptr<Node> remoteHost = remoteHostContainer.Get (0);
   InternetStackHelper internet;
   internet.Install (remoteHostContainer);
 
-  // Create the Internet by connecting remoteHost to pgw. Setup routing too
+  // Create the Internet by connecting remoteHost to upf. Setup routing too
   PointToPointHelper p2ph;
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (2500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -658,14 +658,14 @@ main (int argc, char *argv[])
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIface;
-  ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (mcUeDevs));
+  ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (mcUeDevs));
   // Assign IP address to UEs, and install applications
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
   {
     Ptr<Node> ueNode = ueNodes.Get (u);
     // Set the default gateway for the UE
     Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-    ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+    ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
   }
 
   // Add X2 interfaces

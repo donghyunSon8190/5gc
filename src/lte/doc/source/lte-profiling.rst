@@ -29,11 +29,11 @@ The simulation script used for all the E-UTRAN results showed in this documentat
 
    E-UTRAN
 
-For the EPC results, the script is ``src/lte/examples/lena-simple-epc.cc``. It uses a complete E-UTRAN implementation (PHY+MAC+RLC/UM+PDCP) and the most relevant EPC user plane entities the PGW and SGW, including GTP-U tunneling. This script generates a given number of eNodeBs, distributed across a line and attaches a single UE to every eNodeB. It also creates an EPC network and an external host connected to it through the Internet. Each UE sends and receives data to and from the remote host. In addition, each UE is also sending data to the UE camped in the adjacent eNodeB.
+For the NGC results, the script is ``src/lte/examples/lena-simple-ngc.cc``. It uses a complete E-UTRAN implementation (PHY+MAC+RLC/UM+PDCP) and the most relevant NGC user plane entities the PGW and SGW, including GTP-U tunneling. This script generates a given number of eNodeBs, distributed across a line and attaches a single UE to every eNodeB. It also creates an NGC network and an external host connected to it through the Internet. Each UE sends and receives data to and from the remote host. In addition, each UE is also sending data to the UE camped in the adjacent eNodeB.
 
-.. _fig-epcProfilingScenario:
+.. _fig-ngcProfilingScenario:
 
-.. figure:: figures/epc-profiling-scenario.*                 
+.. figure:: figures/ngc-profiling-scenario.*                 
    :align: center
    :width: 80%
 
@@ -52,7 +52,7 @@ The *lena-profiling* simulation script accepts the following input parameters:
  * ``nFloors``: number of floors, 0 for *Friis propagation model* (no walls), 1 or greater for *Building propagation model* generating a nFloors-storey building.
  * ``traceDirectory``: destination directory where simulation traces will be stored
 
-The *lena-simple-epc* script accepts those other parameters:
+The *lena-simple-ngc* script accepts those other parameters:
 
  * ``simTime``: time to simulate (in seconds)
  * ``numberOfNodes``: number of eNodeB + UE pairs created
@@ -65,7 +65,7 @@ Running time is measured using default Linux shell command **time**. This comman
 Perl script
 ~~~~~~~~~~~
 
-To simplify the process of running the profiling script for a wide range of values and collecting its timing data, a simple Perl script to automate the complete process is provided. It is placed in ``src/lte/test/lte-test-run-time.pl`` for *lena-profiling* and in ``src/lte/epc-test-run-time.pl`` for *lena-simple-epc*. It simply runs a batch of simulations with a range of parameters and stores the timing results in a CSV file called *lteTimes.csv* and *epcTimes.csv* respectively. The range of values each parameter sweeps can be modified editing the corresponding script.
+To simplify the process of running the profiling script for a wide range of values and collecting its timing data, a simple Perl script to automate the complete process is provided. It is placed in ``src/lte/test/lte-test-run-time.pl`` for *lena-profiling* and in ``src/lte/ngc-test-run-time.pl`` for *lena-simple-ngc*. It simply runs a batch of simulations with a range of parameters and stores the timing results in a CSV file called *lteTimes.csv* and *ngcTimes.csv* respectively. The range of values each parameter sweeps can be modified editing the corresponding script.
 
 Requirements
 ------------
@@ -81,7 +81,7 @@ For installing the modules, simply use the follwing command:
 Plotting results
 ----------------
 
-To plot the results obtained from running the Perl scripts, two gnuplot scripts are provided, in ``src/lte/test/lte-test-run-plot`` and ``src/lte/test/epc-test-run-plot``. Most of the plots available in this documentation can be reproduced with those, typing the commands ``gnuplot < src/lte/test/lte-test-run-plot``  and  ``gnuplot < src/lte/test/epc-test-run-plot``.
+To plot the results obtained from running the Perl scripts, two gnuplot scripts are provided, in ``src/lte/test/lte-test-run-plot`` and ``src/lte/test/ngc-test-run-plot``. Most of the plots available in this documentation can be reproduced with those, typing the commands ``gnuplot < src/lte/test/lte-test-run-plot``  and  ``gnuplot < src/lte/test/ngc-test-run-plot``.
 
 Reference software and equipment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,7 +158,7 @@ Massif tool to profile memory consumption
 
    Memory profile
 
-EPC
+NGC
 ~~~
 
 The following results and figures had been obtained with LENA **changeset e8b3ccdf6673**. The rationale behind the two scenarios profiled on this section is the same than for the E-UTRA part.
@@ -168,25 +168,25 @@ Running time
 
 Running time evolution is quadratic since we increase at the same time the number of eNodeB and the number of UEs.
 
-.. _fig-epcRunTime:
+.. _fig-ngcRunTime:
 
-.. figure:: figures/epcRunningTime.*
+.. figure:: figures/ngcRunningTime.*
    :align: center
    :width: 80%
 
    Running time
 
-To estimate the additional complexity of the upper LTE Radio Protocol Stack model and the EPC model, we compare two scenarios using the simplified E-UTRAN version (using only PHY, MAC and the simplified RLC/SM, with no EPC and no ns-3 applications) against the complete E-UTRAN + EPC (with UM RLC, PDCP, end-to-end IP networking and regular ns-3 applications). Both configuration have been tested with the same number of UEs per eNodeB, the same number of eNodeBs, and approximately the same volume of transmitted data (an exact match was not possible due to the different ways in which packets are generated in the two configurations). 
+To estimate the additional complexity of the upper LTE Radio Protocol Stack model and the NGC model, we compare two scenarios using the simplified E-UTRAN version (using only PHY, MAC and the simplified RLC/SM, with no NGC and no ns-3 applications) against the complete E-UTRAN + NGC (with UM RLC, PDCP, end-to-end IP networking and regular ns-3 applications). Both configuration have been tested with the same number of UEs per eNodeB, the same number of eNodeBs, and approximately the same volume of transmitted data (an exact match was not possible due to the different ways in which packets are generated in the two configurations). 
 
-.. _fig-epcEutranRunTime:
+.. _fig-ngcEutranRunTime:
 
-.. figure:: figures/epcEutranRunningTime.*
+.. figure:: figures/ngcEutranRunningTime.*
    :align: center
    :width: 80%
 
-   EPC E-UTRAN running time
+   NGC E-UTRAN running time
 
-From the figure, it is evident that the additional complexity of using the upper LTE stack plus the EPC model translates approximately into a doubling of the execution time of the simulations. We believe that, considered all the new features that have been added, this figure is acceptable.
+From the figure, it is evident that the additional complexity of using the upper LTE stack plus the NGC model translates approximately into a doubling of the execution time of the simulations. We believe that, considered all the new features that have been added, this figure is acceptable.
 
 
 Simulation time
@@ -194,9 +194,9 @@ Simulation time
 
 Finally, again the linearity of the running time as the simulation time increases gets validated through a set of experiments, as the following figure shows.
 
-.. _fig-epcSimTime:
+.. _fig-ngcSimTime:
 
-.. figure:: figures/epcSimulationTime.*                 
+.. figure:: figures/ngcSimulationTime.*                 
    :align: center
    :width: 80%
 

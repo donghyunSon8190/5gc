@@ -303,29 +303,29 @@ static ns3::GlobalValue g_remRbId ("remRbId",
                                    "Control Channel",
                                    ns3::IntegerValue (-1),
                                    MakeIntegerChecker<int32_t> ());
-static ns3::GlobalValue g_epc ("epc",
-                               "If true, will setup the EPC to simulate an end-to-end topology, "
+static ns3::GlobalValue g_ngc ("ngc",
+                               "If true, will setup the NGC to simulate an end-to-end topology, "
                                "with real IP applications over PDCP and RLC UM (or RLC AM by changing "
                                "the default value of EpsBearerToRlcMapping e.g. to RLC_AM_ALWAYS). "
                                "If false, only the LTE radio access will be simulated with RLC SM. ",
                                ns3::BooleanValue (false),
                                ns3::MakeBooleanChecker ());
-static ns3::GlobalValue g_epcDl ("epcDl",
-                                 "if true, will activate data flows in the downlink when EPC is being used. "
+static ns3::GlobalValue g_ngcDl ("ngcDl",
+                                 "if true, will activate data flows in the downlink when NGC is being used. "
                                  "If false, downlink flows won't be activated. "
-                                 "If EPC is not used, this parameter will be ignored.",
+                                 "If NGC is not used, this parameter will be ignored.",
                                  ns3::BooleanValue (true),
                                  ns3::MakeBooleanChecker ());
-static ns3::GlobalValue g_epcUl ("epcUl",
-                                 "if true, will activate data flows in the uplink when EPC is being used. "
+static ns3::GlobalValue g_ngcUl ("ngcUl",
+                                 "if true, will activate data flows in the uplink when NGC is being used. "
                                  "If false, uplink flows won't be activated. "
-                                 "If EPC is not used, this parameter will be ignored.",
+                                 "If NGC is not used, this parameter will be ignored.",
                                  ns3::BooleanValue (true),
                                  ns3::MakeBooleanChecker ());
 static ns3::GlobalValue g_useUdp ("useUdp",
                                   "if true, the UdpClient application will be used. "
                                   "Otherwise, the BulkSend application will be used over a TCP connection. "
-                                  "If EPC is not used, this parameter will be ignored.",
+                                  "If NGC is not used, this parameter will be ignored.",
                                   ns3::BooleanValue (true),
                                   ns3::MakeBooleanChecker ());
 static ns3::GlobalValue g_fadingTrace ("fadingTrace",
@@ -410,12 +410,12 @@ main (int argc, char *argv[])
   uint16_t homeEnbBandwidth = uintegerValue.Get ();
   GlobalValue::GetValueByName ("simTime", doubleValue);
   double simTime = doubleValue.Get ();
-  GlobalValue::GetValueByName ("epc", booleanValue);
-  bool epc = booleanValue.Get ();
-  GlobalValue::GetValueByName ("epcDl", booleanValue);
-  bool epcDl = booleanValue.Get ();
-  GlobalValue::GetValueByName ("epcUl", booleanValue);
-  bool epcUl = booleanValue.Get ();
+  GlobalValue::GetValueByName ("ngc", booleanValue);
+  bool ngc = booleanValue.Get ();
+  GlobalValue::GetValueByName ("ngcDl", booleanValue);
+  bool ngcDl = booleanValue.Get ();
+  GlobalValue::GetValueByName ("ngcUl", booleanValue);
+  bool ngcUl = booleanValue.Get ();
   GlobalValue::GetValueByName ("useUdp", booleanValue);
   bool useUdp = booleanValue.Get ();
   GlobalValue::GetValueByName ("generateRem", booleanValue);
@@ -505,12 +505,12 @@ main (int argc, char *argv[])
       lteHelper->SetFadingModelAttribute ("TraceFilename", StringValue (fadingTrace));
     }
 
-  Ptr<PointToPointEpcHelper> epcHelper;
-  if (epc)
+  Ptr<PointToPointNgcHelper> ngcHelper;
+  if (ngc)
     {
-      NS_LOG_LOGIC ("enabling EPC");
-      epcHelper = CreateObject<PointToPointEpcHelper> ();
-      lteHelper->SetEpcHelper (epcHelper);
+      NS_LOG_LOGIC ("enabling NGC");
+      ngcHelper = CreateObject<PointToPointNgcHelper> ();
+      lteHelper->SetNgcHelper (ngcHelper);
     }
 
   // Macro eNBs in 3-sector hex grid
@@ -532,7 +532,7 @@ main (int argc, char *argv[])
   lteHelper->SetEnbDeviceAttribute ("UlBandwidth", UintegerValue (macroEnbBandwidth));
   NetDeviceContainer macroEnbDevs = lteHexGridEnbTopologyHelper->SetPositionAndInstallEnbDevice (macroEnbs);
 
-  if (epc)
+  if (ngc)
     {
       // this enables handover for macro eNBs
       lteHelper->AddX2Interface (macroEnbs);
@@ -624,7 +624,7 @@ main (int argc, char *argv[])
   Ptr<Node> remoteHost;
   NetDeviceContainer ueDevs;
 
-  if (epc)
+  if (ngc)
     {
       NS_LOG_LOGIC ("setting up internet and remote host");
 
@@ -640,12 +640,12 @@ main (int argc, char *argv[])
       p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
       p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
       p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-      Ptr<Node> pgw = epcHelper->GetPgwNode ();
-      NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+      Ptr<Node> upf = ngcHelper->GetUpfNode ();
+      NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
       Ipv4AddressHelper ipv4h;
       ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
       Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
-      // in this container, interface 0 is the pgw, 1 is the remoteHost
+      // in this container, interface 0 is the upf, 1 is the remoteHost
       remoteHostAddr = internetIpIfaces.GetAddress (1);
 
       Ipv4StaticRoutingHelper ipv4RoutingHelper;
@@ -660,7 +660,7 @@ main (int argc, char *argv[])
 
       // Install the IP stack on the UEs
       internet.Install (ues);
-      ueIpIfaces = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+      ueIpIfaces = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
 
       // attachment (needs to be done after IP stack configuration)
       // using initial cell selection
@@ -688,7 +688,7 @@ main (int argc, char *argv[])
         }
     }
 
-  if (epc)
+  if (ngc)
     {
       NS_LOG_LOGIC ("setting up applications");
 
@@ -718,7 +718,7 @@ main (int argc, char *argv[])
           Ptr<Node> ue = ues.Get (u);
           // Set the default gateway for the UE
           Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ue->GetObject<Ipv4> ());
-          ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+          ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
 
           for (uint32_t b = 0; b < numBearersPerUe; ++b)
             {
@@ -730,7 +730,7 @@ main (int argc, char *argv[])
 
               if (useUdp)
                 {
-                  if (epcDl)
+                  if (ngcDl)
                     {
                       NS_LOG_LOGIC ("installing UDP DL app for UE " << u);
                       UdpClientHelper dlClientHelper (ueIpIfaces.GetAddress (u), dlPort);
@@ -739,7 +739,7 @@ main (int argc, char *argv[])
                                                            InetSocketAddress (Ipv4Address::GetAny (), dlPort));
                       serverApps.Add (dlPacketSinkHelper.Install (ue));
                     }
-                  if (epcUl)
+                  if (ngcUl)
                     {
                       NS_LOG_LOGIC ("installing UDP UL app for UE " << u);
                       UdpClientHelper ulClientHelper (remoteHostAddr, ulPort);
@@ -751,7 +751,7 @@ main (int argc, char *argv[])
                 }
               else // use TCP
                 {
-                  if (epcDl)
+                  if (ngcDl)
                     {
                       NS_LOG_LOGIC ("installing TCP DL app for UE " << u);
                       BulkSendHelper dlClientHelper ("ns3::TcpSocketFactory",
@@ -762,7 +762,7 @@ main (int argc, char *argv[])
                                                            InetSocketAddress (Ipv4Address::GetAny (), dlPort));
                       serverApps.Add (dlPacketSinkHelper.Install (ue));
                     }
-                  if (epcUl)
+                  if (ngcUl)
                     {
                       NS_LOG_LOGIC ("installing TCP UL app for UE " << u);
                       BulkSendHelper ulClientHelper ("ns3::TcpSocketFactory",
@@ -775,23 +775,23 @@ main (int argc, char *argv[])
                     }
                 } // end if (useUdp)
 
-              Ptr<EpcTft> tft = Create<EpcTft> ();
-              if (epcDl)
+              Ptr<NgcTft> tft = Create<NgcTft> ();
+              if (ngcDl)
                 {
-                  EpcTft::PacketFilter dlpf;
+                  NgcTft::PacketFilter dlpf;
                   dlpf.localPortStart = dlPort;
                   dlpf.localPortEnd = dlPort;
                   tft->Add (dlpf); 
                 }
-              if (epcUl)
+              if (ngcUl)
                 {
-                  EpcTft::PacketFilter ulpf;
+                  NgcTft::PacketFilter ulpf;
                   ulpf.remotePortStart = ulPort;
                   ulpf.remotePortEnd = ulPort;
                   tft->Add (ulpf);
                 }
 
-              if (epcDl || epcUl)
+              if (ngcDl || ngcUl)
                 {
                   EpsBearer bearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT);
                   lteHelper->ActivateDedicatedEpsBearer (ueDevs.Get (u), bearer, tft);
@@ -804,7 +804,7 @@ main (int argc, char *argv[])
         }
 
     } 
-  else // (epc == false)
+  else // (ngc == false)
     {
       // for radio bearer activation purposes, consider together home UEs and macro UEs
       NetDeviceContainer ueDevs;
@@ -856,7 +856,7 @@ main (int argc, char *argv[])
 
   lteHelper->EnableMacTraces ();
   lteHelper->EnableRlcTraces ();
-  if (epc)
+  if (ngc)
     {
       lteHelper->EnablePdcpTraces ();
     }

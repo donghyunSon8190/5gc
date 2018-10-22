@@ -32,7 +32,7 @@
 
 #include <ns3/mobility-helper.h>
 #include <ns3/lte-helper.h>
-#include <ns3/point-to-point-epc-helper.h>
+#include <ns3/point-to-point-ngc-helper.h>
 #include <ns3/internet-stack-helper.h>
 #include <ns3/point-to-point-helper.h>
 #include <ns3/ipv4-address-helper.h>
@@ -1686,8 +1686,8 @@ LteUeMeasurementsHandoverTestCase::DoRun ()
   NS_LOG_INFO (this << " " << GetName ());
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper> ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
   lteHelper->SetAttribute ("PathlossModel",
                            StringValue ("ns3::FriisSpectrumPropagationLossModel"));
   lteHelper->SetAttribute ("UseIdealRrc", BooleanValue (true));
@@ -1722,7 +1722,7 @@ LteUeMeasurementsHandoverTestCase::DoRun ()
   mobility.Install (ueNodes);
 
   // Create P-GW node
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
   // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -1736,7 +1736,7 @@ LteUeMeasurementsHandoverTestCase::DoRun ()
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -1783,7 +1783,7 @@ LteUeMeasurementsHandoverTestCase::DoRun ()
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIfaces;
-  ueIpIfaces = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+  ueIpIfaces = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
 
   // Assign IP address to UEs
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
@@ -1791,7 +1791,7 @@ LteUeMeasurementsHandoverTestCase::DoRun ()
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
   // Attach UE to serving eNodeB

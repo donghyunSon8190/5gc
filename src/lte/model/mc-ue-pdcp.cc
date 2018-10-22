@@ -47,7 +47,7 @@ public:
 
   // Interface provided to lower RLC entity (implemented from LteRlcSapUser)
   virtual void ReceivePdcpPdu (Ptr<Packet> p);
-  virtual void  SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info);
+  virtual void  SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info);
 private:
   McUePdcpSpecificLteRlcSapUser ();
   McUePdcp* m_pdcp;
@@ -68,7 +68,7 @@ McUePdcpSpecificLteRlcSapUser::ReceivePdcpPdu (Ptr<Packet> p)
   m_pdcp->DoReceivePdu (p);
 }
 void
-McUePdcpSpecificLteRlcSapUser:: SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+McUePdcpSpecificLteRlcSapUser:: SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 

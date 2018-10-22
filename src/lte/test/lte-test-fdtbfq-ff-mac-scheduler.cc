@@ -49,7 +49,7 @@
 #include <ns3/boolean.h>
 #include <ns3/enum.h>
 
-#include "ns3/point-to-point-epc-helper.h"
+#include "ns3/point-to-point-ngc-helper.h"
 #include "ns3/network-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/internet-module.h"
@@ -267,12 +267,12 @@ LenaFdTbfqFfMacSchedulerTestCase1::DoRun (void)
   Config::SetDefault ("ns3::LteHelper::UseIdealRrc", BooleanValue (true));
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper>  epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper>  ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
 
   //LogComponentEnable ("FdTbfqFfMacScheduler", LOG_DEBUG);
 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
   // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -286,7 +286,7 @@ LenaFdTbfqFfMacSchedulerTestCase1::DoRun (void)
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.001)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -349,7 +349,7 @@ LenaFdTbfqFfMacSchedulerTestCase1::DoRun (void)
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIface;
-  ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+  ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
 
   // Assign IP address to UEs
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
@@ -357,7 +357,7 @@ LenaFdTbfqFfMacSchedulerTestCase1::DoRun (void)
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
   // Attach a UE to a eNB
@@ -375,7 +375,7 @@ LenaFdTbfqFfMacSchedulerTestCase1::DoRun (void)
       
       enum EpsBearer::Qci q = EpsBearer::GBR_CONV_VOICE;
       EpsBearer bearer (q, qos);
-      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, EpcTft::Default ());  
+      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, NgcTft::Default ());  
     }
 
   // Install downlind and uplink applications
@@ -515,10 +515,10 @@ LenaFdTbfqFfMacSchedulerTestCase2::DoRun (void)
 
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper>  epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper>  ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
   // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -532,7 +532,7 @@ LenaFdTbfqFfMacSchedulerTestCase2::DoRun (void)
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.001)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -588,7 +588,7 @@ LenaFdTbfqFfMacSchedulerTestCase2::DoRun (void)
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIface;
-  ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+  ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
 
   // Assign IP address to UEs
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
@@ -596,7 +596,7 @@ LenaFdTbfqFfMacSchedulerTestCase2::DoRun (void)
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
   // Attach a UE to a eNB
@@ -622,7 +622,7 @@ LenaFdTbfqFfMacSchedulerTestCase2::DoRun (void)
   
       enum EpsBearer::Qci q = EpsBearer::GBR_CONV_VOICE;
       EpsBearer bearer (q, qos);
-      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, EpcTft::Default ());  
+      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, NgcTft::Default ());  
     }
 
 

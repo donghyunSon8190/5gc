@@ -212,8 +212,8 @@ int main (int argc, char *argv[])
   Config::SetDefault ("ns3::RadioBearerStatsCalculator::DlPdcpOutputFilename", StringValue       (path + dlPdcpOutName + "_" + seedSetStr + "_" + runSetStr + "_" + time_str + extension));
   Config::SetDefault ("ns3::RadioBearerStatsCalculator::UlPdcpOutputFilename", StringValue       (path + ulPdcpOutName + "_" + seedSetStr + "_" + runSetStr + "_" + time_str + extension));
 
-  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::S1uLinkDelay", TimeValue (Seconds(0.001)));
-  Config::SetDefault ("ns3::PointToPointEpcHelper::S1uLinkDelay", TimeValue (Seconds(0.001)));
+  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::S1uLinkDelay", TimeValue (Seconds(0.001)));
+  Config::SetDefault ("ns3::PointToPointNgcHelper::S1uLinkDelay", TimeValue (Seconds(0.001)));
 
   GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
   NodeContainer nodes, routers;
@@ -242,12 +242,12 @@ int main (int argc, char *argv[])
   mmWaveHelper->SetAttribute ("PathlossModel", StringValue ("ns3::BuildingsObstaclePropagationLossModel"));
   mmWaveHelper->Initialize();
   mmWaveHelper->SetPhyMacConfigurationParameters("CenterFreq", "28e9");
-  Ptr<MmWavePointToPointEpcHelper> mmWaveEpcHelper = CreateObject<MmWavePointToPointEpcHelper> ();
-  mmWaveEpcHelper->SetAttribute("UeBaseAddress", StringValue("7.0.0.0"));
-  mmWaveEpcHelper->SetAttribute("X2BaseAddress", StringValue("15.0.0.0"));
-  mmWaveEpcHelper->SetAttribute("S1apBaseAddress", StringValue("16.0.0.0"));
-  mmWaveEpcHelper->SetAttribute("S1uBaseAddress", StringValue("17.0.0.0"));
-  mmWaveEpcHelper->Initialize();
+  Ptr<MmWavePointToPointNgcHelper> mmWaveNgcHelper = CreateObject<MmWavePointToPointNgcHelper> ();
+  mmWaveNgcHelper->SetAttribute("UeBaseAddress", StringValue("7.0.0.0"));
+  mmWaveNgcHelper->SetAttribute("X2BaseAddress", StringValue("15.0.0.0"));
+  mmWaveNgcHelper->SetAttribute("S1apBaseAddress", StringValue("16.0.0.0"));
+  mmWaveNgcHelper->SetAttribute("S1uBaseAddress", StringValue("17.0.0.0"));
+  mmWaveNgcHelper->Initialize();
 
   // LTE helper
   Ptr<LteHelper> lteHelper_2 = CreateObject<LteHelper> ();
@@ -258,12 +258,12 @@ int main (int argc, char *argv[])
   lteHelper_2->SetPathlossModelAttribute ("ShadowSigmaOutdoor", DoubleValue (6));
   lteHelper_2->SetPathlossModelAttribute ("ShadowSigmaIndoor", DoubleValue (8));
   lteHelper_2->SetSpectrumChannelType ("ns3::MultiModelSpectrumChannel");
-  Ptr<PointToPointEpcHelper> epcHelper_2 = CreateObject<PointToPointEpcHelper> ();
-  epcHelper_2->SetAttribute("UeBaseAddress", StringValue("8.0.0.0"));
-  epcHelper_2->SetAttribute("X2BaseAddress", StringValue("10.0.0.0"));
-  epcHelper_2->SetAttribute("S1apBaseAddress", StringValue("11.0.0.0"));
-  epcHelper_2->SetAttribute("S1uBaseAddress", StringValue("12.0.0.0"));
-  epcHelper_2->Initialize();
+  Ptr<PointToPointNgcHelper> ngcHelper_2 = CreateObject<PointToPointNgcHelper> ();
+  ngcHelper_2->SetAttribute("UeBaseAddress", StringValue("8.0.0.0"));
+  ngcHelper_2->SetAttribute("X2BaseAddress", StringValue("10.0.0.0"));
+  ngcHelper_2->SetAttribute("S1apBaseAddress", StringValue("11.0.0.0"));
+  ngcHelper_2->SetAttribute("S1uBaseAddress", StringValue("12.0.0.0"));
+  ngcHelper_2->Initialize();
 
   Ipv4AddressHelper address1, address2, address3;
   std::ostringstream cmd_oss;
@@ -312,8 +312,8 @@ int main (int argc, char *argv[])
   NodeContainer enbNodes;
   enbNodes.Create(1);
 
-  mmWaveHelper->SetEpcHelper (mmWaveEpcHelper);
-  Ptr<Node> pgw = mmWaveEpcHelper->GetPgwNode ();
+  mmWaveHelper->SetNgcHelper (mmWaveNgcHelper);
+  Ptr<Node> upf = mmWaveNgcHelper->GetUpfNode ();
   setPos (enbNodes.Get (0), 0, 0, 3);
   BuildingsHelper::Install (enbNodes);
 
@@ -321,7 +321,7 @@ int main (int argc, char *argv[])
   NetDeviceContainer ueMmWaveDevs = mmWaveHelper->InstallUeDevice (ueNodes);
 
   // Assign ip addresses
-  if1 = mmWaveEpcHelper->AssignUeIpv4Address (NetDeviceContainer (ueMmWaveDevs));
+  if1 = mmWaveNgcHelper->AssignUeIpv4Address (NetDeviceContainer (ueMmWaveDevs));
   mmWaveHelper->AttachToClosestEnb (ueMmWaveDevs, enbMmWaveDevs);
 
   // setup ip routes
@@ -340,7 +340,7 @@ int main (int argc, char *argv[])
 
   for(uint32_t i = 0; i < numberOfNodes; i++)
   {
-    devices2 = pointToPoint.Install (serverNodes.Get (i), pgw);
+    devices2 = pointToPoint.Install (serverNodes.Get (i), upf);
     if2 = address2.Assign (devices2);
     address2.NewNetwork ();
 
@@ -361,8 +361,8 @@ int main (int argc, char *argv[])
   NodeContainer lteEnbNodes;
   lteEnbNodes.Create(1);
 
-  lteHelper_2->SetEpcHelper (epcHelper_2);
-  pgw = epcHelper_2->GetPgwNode ();
+  lteHelper_2->SetNgcHelper (ngcHelper_2);
+  upf = ngcHelper_2->GetUpfNode ();
   setPos (lteEnbNodes.Get (0), 0, 0, 3);
   BuildingsHelper::Install (lteEnbNodes);
   //Simulator::Schedule(Seconds(10.0), &changePos, lteEnbNodes.Get (0), 60, +15000, 3);
@@ -371,7 +371,7 @@ int main (int argc, char *argv[])
   NetDeviceContainer ueLteDevs = lteHelper_2->InstallUeDevice (ueNodes);
 
   // Assign ip addresses
-  if1 = epcHelper_2->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
+  if1 = ngcHelper_2->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
   lteHelper_2->Attach (ueLteDevs, enbLteDevs.Get(0));
 
   // setup ip routes
@@ -391,7 +391,7 @@ int main (int argc, char *argv[])
   
   for(uint32_t i = 0; i < numberOfNodes; i++)
   {
-    devices3 = pointToPoint.Install (serverNodes.Get (i), pgw);
+    devices3 = pointToPoint.Install (serverNodes.Get (i), upf);
     if3 = address2.Assign (devices3);
     address2.NewNetwork ();
 
@@ -410,7 +410,7 @@ int main (int argc, char *argv[])
     NS_LOG_UNCOND("route add 8.0.0.0/8 via " << if3.GetAddress (1, 0) << " dev sim" << 1 << " table " << (2) << " node " << serverNodes.Get (i));
     LinuxStackHelper::RunIp (serverNodes.Get (i), Seconds (0.1), cmd_oss.str ().c_str ());
   }
-  setPos (pgw, 70, 0, 0);
+  setPos (upf, 70, 0, 0);
 
   // default route
   for(uint32_t i = 0; i < numberOfNodes; i++)

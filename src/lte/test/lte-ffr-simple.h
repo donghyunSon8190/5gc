@@ -96,7 +96,7 @@ protected:
 
   // FFR SAP RRC PROVIDER IMPLEMENTATION
   virtual void DoReportUeMeas (uint16_t rnti, LteRrcSap::MeasResults measResults);
-  virtual void DoRecvLoadInformation (EpcX2Sap::LoadInformationParams params);
+  virtual void DoRecvLoadInformation (NgcX2Sap::LoadInformationParams params);
 
 private:
 

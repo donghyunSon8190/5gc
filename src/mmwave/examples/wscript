@@ -5,10 +5,10 @@ def build(bld):
     obj.source = 'mmwave-example.cc'
     obj = bld.create_ns3_program('mmwave-tcp-example', ['mmwave'])
     obj.source = 'mmwave-tcp-example.cc'
-    obj = bld.create_ns3_program('mmwave-simple-epc', ['mmwave'])
-    obj.source = 'mmwave-simple-epc.cc'
-    obj = bld.create_ns3_program('mmwave-epc-tdma', ['mmwave'])
-    obj.source = 'mmwave-epc-tdma.cc'   
+    obj = bld.create_ns3_program('mmwave-simple-ngc', ['mmwave'])
+    obj.source = 'mmwave-simple-ngc.cc'
+    obj = bld.create_ns3_program('mmwave-ngc-tdma', ['mmwave'])
+    obj.source = 'mmwave-ngc-tdma.cc'   
     obj = bld.create_ns3_program('mmwave-tdma', ['mmwave'])
     obj.source = 'mmwave-tdma.cc'       
     obj = bld.create_ns3_program('mmwave-simple-building-obstacle', ['mmwave'])
@@ -19,8 +19,8 @@ def build(bld):
     obj.source = 'mmwave-amc-test.cc'
     obj = bld.create_ns3_program('mmwave-amc-test2', ['mmwave'])
     obj.source = 'mmwave-amc-test2.cc'
-    obj = bld.create_ns3_program('mmwave-epc-amc-test', ['mmwave'])
-    obj.source = 'mmwave-epc-amc-test.cc'    
+    obj = bld.create_ns3_program('mmwave-ngc-amc-test', ['mmwave'])
+    obj.source = 'mmwave-ngc-amc-test.cc'    
     obj = bld.create_ns3_program('mmwave-tcp-raytracing-example', ['mmwave'])
     obj.source = 'mmwave-tcp-raytracing-example.cc' 
     

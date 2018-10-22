@@ -153,8 +153,8 @@ main (int argc, char *argv[])
   cmd.Parse(argc, argv);
 
   Ptr<LteHelper> lteHelper = virt5gcHelper->GetLteHelper();
-  Ptr<PointToPointEpcHelper> epcHelper = virt5gcHelper->GetEpcHelper();
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<PointToPointNgcHelper> ngcHelper = virt5gcHelper->GetNgcHelper();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
    // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -168,7 +168,7 @@ main (int argc, char *argv[])
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -197,14 +197,14 @@ main (int argc, char *argv[])
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIface;
-  ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
+  ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
   // Assign IP address to UEs, and install applications
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
     {
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
   
@@ -240,8 +240,8 @@ main (int argc, char *argv[])
 	  sinkApps.Stop (Seconds (simTime));
 	  appList.push_back(sinkApps);
 
-	  Ptr<EpcTft> tft = Create<EpcTft> ();
-	  EpcTft::PacketFilter dlpf;
+	  Ptr<NgcTft> tft = Create<NgcTft> ();
+	  NgcTft::PacketFilter dlpf;
 	  dlpf.localPortStart = dlPort;
 	  dlpf.remotePortEnd = dlPort;
 	  tft->Add(dlpf);

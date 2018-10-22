@@ -40,8 +40,8 @@ using namespace ns3;
 
 
 /**
- * \brief Test suite for executing the cell selection test cases in without-EPC
- *        and with-EPC scenarios.
+ * \brief Test suite for executing the cell selection test cases in without-NGC
+ *        and with-NGC scenarios.
  *
  * \sa ns3::LteCellSelectionTestCase
  */
@@ -78,7 +78,7 @@ public:
   /**
    * \brief Creates an instance of the initial cell selection test case.
    * \param name name of this test
-   * \param isEpcMode set to true for setting up simulation with EPC enabled
+   * \param isNgcMode set to true for setting up simulation with NGC enabled
    * \param isIdealRrc if true, simulation uses Ideal RRC protocol, otherwise
    *                   simulation uses Real RRC protocol
    * \param interSiteDistance the distance between eNodeB in meters
@@ -86,7 +86,7 @@ public:
    *                    simulation
    * \param rngRun the number of run to be used by the random number generator
    */
-  LteCellSelectionTestCase (std::string name, bool isEpcMode, bool isIdealRrc,
+  LteCellSelectionTestCase (std::string name, bool isNgcMode, bool isIdealRrc,
                             double interSiteDistance,
                             std::vector<UeSetup_t> ueSetupList,
                             int64_t rngRun);
@@ -117,7 +117,7 @@ private:
   void ConnectionEstablishedCallback (std::string context, uint64_t imsi,
                                       uint16_t cellId, uint16_t rnti);
 
-  bool m_isEpcMode;
+  bool m_isNgcMode;
   bool m_isIdealRrc;
   double m_interSiteDistance;
   std::vector<UeSetup_t> m_ueSetupList;

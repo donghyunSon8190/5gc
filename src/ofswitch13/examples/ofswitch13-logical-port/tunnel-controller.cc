@@ -19,7 +19,7 @@
  */
 
 #include "tunnel-controller.h"
-#include <ns3/epc-gtpu-header.h>
+#include <ns3/ngc-gtpu-header.h>
 
 namespace ns3 {
 

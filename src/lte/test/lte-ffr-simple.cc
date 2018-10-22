@@ -319,7 +319,7 @@ LteFfrSimple::UpdatePdschConfigDedicated ()
 }
 
 void
-LteFfrSimple::DoRecvLoadInformation (EpcX2Sap::LoadInformationParams params)
+LteFfrSimple::DoRecvLoadInformation (NgcX2Sap::LoadInformationParams params)
 {
   NS_LOG_FUNCTION (this);
 }

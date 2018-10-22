@@ -1,21 +1,21 @@
 
 diagram {
-	EpcUeNas; LteUeRrc; LteEnbRrc; EpcEnbApplication; EpcSgwPgwApplication; EpcMme;	
+	NgcUeNas; LteUeRrc; LteEnbRrc; NgcEnbApplication; NgcSgwPgwApplication; NgcMme;	
 	
 	
-	EpcUeNas ->> LteUeRrc [label="ForceCampedOnEnb (CellId)"];
-	EpcUeNas ->> LteUeRrc [label="Connect"] 
+	NgcUeNas ->> LteUeRrc [label="ForceCampedOnEnb (CellId)"];
+	NgcUeNas ->> LteUeRrc [label="Connect"] 
 	LteUeRrc ->> LteEnbRrc [label="RRC Connection Request"]	
-	LteEnbRrc ->> EpcEnbApplication [label="initial UE message"]		
-	EpcEnbApplication ->> EpcMme [label="S1-AP INITIAL UE MESSAGE"]
-	EpcMme ->> EpcMme [label="store IMSI->eNB UE id (RNTI) mapping"]
-	EpcMme ->> EpcSgwPgwApplication [label="S11 CREATE SESSION"]
-	EpcSgwPgwApplication ->> EpcSgwPgwApplication [label="setup S1-U bearers"]
-	EpcMme <<- EpcSgwPgwApplication [label="S11 CREATE SESSION RESPONSE"]
-	EpcEnbApplication <<- EpcMme [label="S1-AP INITIAL CONTEXT SETUP (bearers to be created)"]
-	EpcEnbApplication ->> EpcMme [label="S1-AP INITIAL CONTEXT SETUP RESPONSE"]
-	EpcEnbApplication ->> EpcEnbApplication [label="setup S1-U bearers"]	
-	LteEnbRrc <<- EpcEnbApplication [label="DataRadioBearerSetupRequest"]		
+	LteEnbRrc ->> NgcEnbApplication [label="initial UE message"]		
+	NgcEnbApplication ->> NgcMme [label="S1-AP INITIAL UE MESSAGE"]
+	NgcMme ->> NgcMme [label="store IMSI->eNB UE id (RNTI) mapping"]
+	NgcMme ->> NgcSgwPgwApplication [label="S11 CREATE SESSION"]
+	NgcSgwPgwApplication ->> NgcSgwPgwApplication [label="setup S1-U bearers"]
+	NgcMme <<- NgcSgwPgwApplication [label="S11 CREATE SESSION RESPONSE"]
+	NgcEnbApplication <<- NgcMme [label="S1-AP INITIAL CONTEXT SETUP (bearers to be created)"]
+	NgcEnbApplication ->> NgcMme [label="S1-AP INITIAL CONTEXT SETUP RESPONSE"]
+	NgcEnbApplication ->> NgcEnbApplication [label="setup S1-U bearers"]	
+	LteEnbRrc <<- NgcEnbApplication [label="DataRadioBearerSetupRequest"]		
 	LteEnbRrc ->> LteEnbRrc  [label="setup data radio bearers"]
 	LteUeRrc <<- LteEnbRrc [label="RRC Connection Reconfiguration"]	
 	LteUeRrc ->> LteUeRrc  [label="setup data radio bearers"]

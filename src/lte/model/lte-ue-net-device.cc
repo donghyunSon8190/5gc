@@ -39,10 +39,10 @@
 #include "ns3/ipv4.h"
 #include "lte-amc.h"
 #include "lte-ue-phy.h"
-#include "epc-ue-nas.h"
+#include "ngc-ue-nas.h"
 #include <ns3/ipv4-l3-protocol.h>
 #include <ns3/log.h>
-#include "epc-tft.h"
+#include "ngc-tft.h"
 
 namespace ns3 {
 
@@ -58,11 +58,11 @@ TypeId LteUeNetDevice::GetTypeId (void)
     TypeId ("ns3::LteUeNetDevice")
     .SetParent<LteNetDevice> ()
     .AddConstructor<LteUeNetDevice> ()
-    .AddAttribute ("EpcUeNas",
+    .AddAttribute ("NgcUeNas",
                    "The NAS associated to this UeNetDevice",
                    PointerValue (),
                    MakePointerAccessor (&LteUeNetDevice::m_nas),
-                   MakePointerChecker <EpcUeNas> ())
+                   MakePointerChecker <NgcUeNas> ())
     .AddAttribute ("LteUeRrc",
                    "The RRC associated to this UeNetDevice",
                    PointerValue (),
@@ -93,7 +93,7 @@ TypeId LteUeNetDevice::GetTypeId (void)
     .AddAttribute ("CsgId",
                    "The Closed Subscriber Group (CSG) identity that this UE is associated with, "
                    "i.e., giving the UE access to cells which belong to this particular CSG. "
-                   "This restriction only applies to initial cell selection and EPC-enabled simulation. "
+                   "This restriction only applies to initial cell selection and NGC-enabled simulation. "
                    "This does not revoke the UE's access to non-CSG cells. ",
                    UintegerValue (0),
                    MakeUintegerAccessor (&LteUeNetDevice::SetCsgId,
@@ -179,7 +179,7 @@ LteUeNetDevice::GetPhy (void) const
   return m_phy;
 }
 
-Ptr<EpcUeNas>
+Ptr<NgcUeNas>
 LteUeNetDevice::GetNas (void) const
 {
   NS_LOG_FUNCTION (this);

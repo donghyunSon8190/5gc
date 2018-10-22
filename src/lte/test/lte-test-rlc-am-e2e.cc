@@ -175,7 +175,7 @@ LteRlcAmE2eTestCase::DoRun (void)
   //     lteSimpleHelper->Attach (ueLteDevs.Get(i), enbLteDevs.Get(i));
   //   }
 
-  //   lteSimpleHelper->ActivateEpsBearer (ueLteDevs, EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT), EpcTft::Default ());
+  //   lteSimpleHelper->ActivateEpsBearer (ueLteDevs, EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT), NgcTft::Default ());
 
 
   // Error models: downlink and uplink

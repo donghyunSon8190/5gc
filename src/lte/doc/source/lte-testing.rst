@@ -1189,7 +1189,7 @@ model.
 GTP-U protocol
 --------------
 
-The unit test suite ``epc-gtpu`` checks that the encoding and decoding of the GTP-U
+The unit test suite ``ngc-gtpu`` checks that the encoding and decoding of the GTP-U
 header is done correctly. The test fills in a header with a set of
 known values, adds the header to a packet, and then removes the header
 from the packet. The test fails if, upon removing, any of the fields
@@ -1200,14 +1200,14 @@ comparing the decoded value from the known value.
 S1-U interface
 --------------
 
-Two test suites (``epc-s1u-uplink`` and ``epc-s1u-downlink``) make
+Two test suites (``ngc-s1u-uplink`` and ``ngc-s1u-downlink``) make
 sure that the S1-U interface implementation works correctly in
 isolation. This is achieved by creating a set of simulation scenarios
-where the EPC model alone is used, without the LTE model (i.e.,
+where the NGC model alone is used, without the LTE model (i.e.,
 without the LTE radio protocol stack, which is replaced by simple CSMA
 devices). This checks that the
-interoperation between multiple EpcEnbApplication instances in
-multiple eNBs and the EpcSgwPgwApplication instance in the SGW/PGW
+interoperation between multiple NgcEnbApplication instances in
+multiple eNBs and the NgcSgwPgwApplication instance in the SGW/PGW
 node works correctly in a variety of scenarios, with varying numbers
 of end users (nodes with a CSMA device installed), eNBs, and different
 traffic patterns (packet sizes and number of total packets).
@@ -1222,8 +1222,8 @@ received traffic pattern is detected for any UE, the test fails.
 TFT classifier
 --------------
 
-The test suite ``epc-tft-classifier`` checks in isolation that the
-behavior of the EpcTftClassifier class is correct. This is performed
+The test suite ``ngc-tft-classifier`` checks in isolation that the
+behavior of the NgcTftClassifier class is correct. This is performed
 by creating different classifier instances where different TFT
 instances are activated, and testing for each classifier that an
 heterogeneous set of packets (including IP and TCP/UDP headers) is
@@ -1236,12 +1236,12 @@ matches with the one that is expected for the considered packet.
 
 
 
-End-to-end LTE-EPC data plane functionality
+End-to-end LTE-NGC data plane functionality
 -------------------------------------------
 
-The test suite ``lte-epc-e2e-data`` ensures the correct end-to-end
-functionality of the LTE-EPC data plane. For each test case in this
-suite, a complete LTE-EPC simulation
+The test suite ``lte-ngc-e2e-data`` ensures the correct end-to-end
+functionality of the LTE-NGC data plane. For each test case in this
+suite, a complete LTE-NGC simulation
 scenario is created with the following characteristics:
 
  * a given number of eNBs
@@ -1379,7 +1379,7 @@ at +0.109s.
 
 The simulation scenario in the test cases is as follow:
 
- - EPC is enabled
+ - NGC is enabled
  - 2 eNodeBs with circular (isotropic) antenna, separated by 1000 meters
  - 1 static UE positioned exactly in the center between the eNodeBs
  - no application installed
@@ -1426,7 +1426,7 @@ and the strongest cell handover algorithm).
 Each test case is a simulation of a micro-cell environment with the following
 parameter:
 
- - EPC is enabled
+ - NGC is enabled
  - several circular (isotropic antenna) micro-cell eNodeBs in a rectangular grid
    layout, with 130 m distance between each adjacent point 
  - 1 static UE, positioned close to and attached to the source cell
@@ -1561,7 +1561,7 @@ TD-TBFQ, FD-TBFQ). (Hard FR do not use UE measurements, so there is no point to 
 this type of test for Hard FR).
 
 Test case for Distributed FFR algorithm is quite similar to above one, but since eNBs need 
-to exchange some information, scenario with EPC enabled and X2 interfaces is considered.
+to exchange some information, scenario with NGC enabled and X2 interfaces is considered.
 Moreover, both eNB are using Distributed FFR algorithm. There are 2 UE in first cell, 
 and 1 in second cell. Position of each UE is changed (rather slow because time is
 needed to report new UE Measurements), to obtain different result from calculation in 

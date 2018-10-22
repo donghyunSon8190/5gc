@@ -20,7 +20,7 @@ Usage Overview
 --------------
 
 The ns-3 LTE model is a software library that allows the simulation of
-LTE networks, optionally including the Evolved Packet Core (EPC).  The
+LTE networks, optionally including the Evolved Packet Core (NGC).  The
 process of performing such simulations typically involves the
 following steps:
 
@@ -44,7 +44,7 @@ of practical examples.
 Basic simulation program
 ------------------------
 
-Here is the minimal simulation program that is needed to do an LTE-only simulation (without EPC).
+Here is the minimal simulation program that is needed to do an LTE-only simulation (without NGC).
 
 .. highlight:: none
 
@@ -226,7 +226,7 @@ Current implementation does not consider credit threshold (:math:`C` = 0). In PS
 PSS will set this value to half of total UE. The default FD scheduler is PFsch.
 
 In addition, token generation rate in TBFQ and target bit rate in PSS need to be configured by Guarantee Bit Rate (GBR) or 
-Maximum Bit Rate (MBR) in epc bearer QoS parameters. Users can use following codes to define GBR and MBR in both downlink and uplink::
+Maximum Bit Rate (MBR) in ngc bearer QoS parameters. Users can use following codes to define GBR and MBR in both downlink and uplink::
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
   enum EpsBearer::Qci q = EpsBearer::yourvalue;  // define Qci type
@@ -236,7 +236,7 @@ Maximum Bit Rate (MBR) in epc bearer QoS parameters. Users can use following cod
   qos.mbrDl = yourvalue; // Downlink MBR
   qos.mbrUl = yourvalue; // Uplink MBR
   EpsBearer bearer (q, qos);
-  lteHelper->ActivateDedicatedEpsBearer (ueDevs, bearer, EpcTft::Default ());
+  lteHelper->ActivateDedicatedEpsBearer (ueDevs, bearer, NgcTft::Default ());
 
 In PSS, TBR is obtained from GBR in bearer level QoS parameters. In TBFQ, token generation rate is obtained from the MBR
 setting in bearer level QoS parameters, which therefore needs to be configured consistently.
@@ -246,7 +246,7 @@ three based on paper [FABokhari2009]_. In addition, current version of TBFQ does
 MBR and GBR. Another parameter in TBFQ is packet arrival rate. This parameter is calculated within scheduler and equals to the past
 average throughput which is used in PF scheduler.
 
-Many useful attributes of the LTE-EPC model will be described in the
+Many useful attributes of the LTE-NGC model will be described in the
 following subsections. Still, there are many attributes which are not
 explicitly mentioned in the design or user documentation, but which
 are clearly documented using the ns-3 attribute system. You can easily
@@ -257,13 +257,13 @@ program, like this::
      ./waf --run lena-simple --command-template="%s --PrintAttributes=ns3::LteHelper"
 
 
-You can try also with other LTE and EPC objects, like this::
+You can try also with other LTE and NGC objects, like this::
    
      ./waf --run lena-simple --command-template="%s --PrintAttributes=ns3::LteEnbNetDevice"
      ./waf --run lena-simple --command-template="%s --PrintAttributes=ns3::LteEnbMac"
      ./waf --run lena-simple --command-template="%s --PrintAttributes=ns3::LteEnbPhy"
      ./waf --run lena-simple --command-template="%s --PrintAttributes=ns3::LteUePhy"
-     ./waf --run lena-simple --command-template="%s --PrintAttributes=ns3::PointToPointEpcHelper"
+     ./waf --run lena-simple --command-template="%s --PrintAttributes=ns3::PointToPointNgcHelper"
  
 
 
@@ -771,49 +771,49 @@ Finally, the required efficiency of the ``PiroEW2010`` AMC module can be tuned t
 
 .. _sec-evolved-packet-core:
 
-Evolved Packet Core (EPC)
+Evolved Packet Core (NGC)
 -------------------------
 
 We now explain how to write a simulation program that allows to
-simulate the EPC in addition to the LTE radio access network. The use
-of EPC allows to use IPv4 networking with LTE devices. In other words,
+simulate the NGC in addition to the LTE radio access network. The use
+of NGC allows to use IPv4 networking with LTE devices. In other words,
 you will be able to use the regular ns-3 applications and sockets over
 IPv4 over LTE, and also to connect an LTE network to any other IPv4
 network you might have in your simulation.
 
 First of all, in addition to ``LteHelper`` that we already introduced
 in :ref:`sec-basic-simulation-program`, you need to use an additional
-``EpcHelper`` class, which will take care of creating the EPC entities and
-network topology. Note that you can't use ``EpcHelper`` directly, as
+``NgcHelper`` class, which will take care of creating the NGC entities and
+network topology. Note that you can't use ``NgcHelper`` directly, as
 it is an abstract base class; instead, you need to use one of its
-child classes, which provide different EPC topology implementations. In
-this example we will consider ``PointToPointEpcHelper``, which
-implements an EPC based on point-to-point links. To use it, you need
+child classes, which provide different NGC topology implementations. In
+this example we will consider ``PointToPointNgcHelper``, which
+implements an NGC based on point-to-point links. To use it, you need
 first to insert this code in your simulation program::
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
+  Ptr<PointToPointNgcHelper> ngcHelper = CreateObject<PointToPointNgcHelper> ();
 
-Then, you need to tell the LTE helper that the EPC will be used::
+Then, you need to tell the LTE helper that the NGC will be used::
 
-  lteHelper->SetEpcHelper (epcHelper);
+  lteHelper->SetNgcHelper (ngcHelper);
 
 the above step is necessary so that the LTE helper will trigger the
-appropriate EPC configuration in correspondance with some important
+appropriate NGC configuration in correspondance with some important
 configuration, such as when a new eNB or UE is added to the
-simulation, or an EPS bearer is created. The EPC helper will
+simulation, or an EPS bearer is created. The NGC helper will
 automatically take care of the necessary setup, such as S1 link
 creation and S1 bearer setup. All this will be done without the
 intervention of the user.
 
-Calling ``lteHelper->SetEpcHelper (epcHelper)`` enables the use of
-EPC, and has the side effect that any new ``LteEnbRrc`` that is
+Calling ``lteHelper->SetNgcHelper (ngcHelper)`` enables the use of
+NGC, and has the side effect that any new ``LteEnbRrc`` that is
 created will have the ``EpsBearerToRlcMapping`` attribute set to
 ``RLC_UM_ALWAYS`` instead of ``RLC_SM_ALWAYS`` if the latter was
 the default; otherwise, the attribute won't be changed (e.g., if
 you changed the default to ``RLC_AM_ALWAYS``, it won't be touched).
 
-It is to be noted that the ``EpcHelper`` will also automatically
+It is to be noted that the ``NgcHelper`` will also automatically
 create the PGW node and configure it so that it can properly handle
 traffic from/to the LTE radio access network.  Still,
 you need to add some explicit code to connect the PGW to other
@@ -821,7 +821,7 @@ IPv4 networks (e.g., the internet). Here is a very simple example about
 how to connect a single remote host to the PGW via a point-to-point
 link::
 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> pgw = ngcHelper->GetPgwNode ();
 
    // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -845,7 +845,7 @@ link::
 
 It's important to specify routes so that the remote host can reach LTE
 UEs. One way of doing this is by exploiting the fact that the
-``PointToPointEpcHelper`` will by default assign to LTE UEs an IP address in the
+``PointToPointNgcHelper`` will by default assign to LTE UEs an IP address in the
 7.0.0.0 network. With this in mind, it suffices to do::
 
   Ipv4StaticRoutingHelper ipv4RoutingHelper;
@@ -880,16 +880,16 @@ additionally do like this::
         {
           Ptr<Node> ue = ueNodes.Get (u);          
           Ptr<NetDevice> ueLteDevice = ueLteDevs.Get (u);
-          Ipv4InterfaceContainer ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevice));
+          Ipv4InterfaceContainer ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevice));
           // set the default gateway for the UE
           Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ue->GetObject<Ipv4> ());          
-          ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+          ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
         }
 
 The activation of bearers is done in a slightly different way with
 respect to what done for an LTE-only simulation. First, the method
-ActivateDataRadioBearer is not to be used when the EPC is
-used. Second, when EPC is used, the default EPS bearer will be
+ActivateDataRadioBearer is not to be used when the NGC is
+used. Second, when NGC is used, the default EPS bearer will be
 activated automatically when you call LteHelper::Attach (). Third, if
 you want to setup dedicated EPS bearer, you can do so using the method
 LteHelper::ActivateDedicatedEpsBearer (). This method takes as a
@@ -898,14 +898,14 @@ identifies the type of traffic that will be mapped to the dedicated
 EPS bearer. Here is an example for how to setup a dedicated bearer
 for an application at the UE communicating on port 1234::
 
-      Ptr<EpcTft> tft = Create<EpcTft> ();
-      EpcTft::PacketFilter pf;
+      Ptr<NgcTft> tft = Create<NgcTft> ();
+      NgcTft::PacketFilter pf;
       pf.localPortStart = 1234;
       pf.localPortEnd = 1234;
       tft->Add (pf);  
       lteHelper->ActivateDedicatedEpsBearer (ueLteDevs, EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT), tft);
 
-you can of course use custom EpsBearer and EpcTft configurations,
+you can of course use custom EpsBearer and NgcTft configurations,
 please refer to the doxygen documentation for how to do it.
 
 
@@ -932,18 +932,18 @@ That's all! You can now start your simulation as usual::
 
 
 
-Using the EPC with emulation mode
+Using the NGC with emulation mode
 ---------------------------------
 
-In the previous section we used PointToPoint links for the connection between the eNBs and the SGW (S1-U interface) and among eNBs (X2-U and X2-C interfaces). The LTE module supports using emulated links instead of PointToPoint links. This is achieved by just replacing the creation of ``LteHelper`` and ``EpcHelper`` with the following code::
+In the previous section we used PointToPoint links for the connection between the eNBs and the SGW (S1-U interface) and among eNBs (X2-U and X2-C interfaces). The LTE module supports using emulated links instead of PointToPoint links. This is achieved by just replacing the creation of ``LteHelper`` and ``NgcHelper`` with the following code::
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<EmuEpcHelper>  epcHelper = CreateObject<EmuEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
-  epcHelper->Initialize ();
+  Ptr<EmuNgcHelper>  ngcHelper = CreateObject<EmuNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
+  ngcHelper->Initialize ();
 
 
-The attributes ``ns3::EmuEpcHelper::sgwDeviceName`` and ``ns3::EmuEpcHelper::enbDeviceName`` are used to set the name of the devices used for transporting the S1-U, X2-U and X2-C interfaces at the SGW and eNB, respectively. We will now show how this is done in an example where we execute the example program ``lena-simple-epc-emu`` using two virtual ethernet interfaces. 
+The attributes ``ns3::EmuNgcHelper::sgwDeviceName`` and ``ns3::EmuNgcHelper::enbDeviceName`` are used to set the name of the devices used for transporting the S1-U, X2-U and X2-C interfaces at the SGW and eNB, respectively. We will now show how this is done in an example where we execute the example program ``lena-simple-ngc-emu`` using two virtual ethernet interfaces. 
 
 First of all we build ns-3 appropriately::
 
@@ -977,7 +977,7 @@ Then we setup two virtual ethernet interfaces, and start wireshark to look at th
 
 We can now run the example program with the simulated clock::
 
-  ./waf --run lena-simple-epc-emu --command="%s --ns3::EmuEpcHelper::sgwDeviceName=veth0 --ns3::EmuEpcHelper::enbDeviceName=veth1"
+  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::sgwDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1"
 
 
 Using wireshark, you should see ARP resolution first, then some GTP
@@ -985,12 +985,12 @@ packets exchanged both in uplink and downlink.
 
 The default setting of the example program is 1 eNB and 1UE. You can change this via command line parameters, e.g.::
 
-  ./waf --run lena-simple-epc-emu --command="%s --ns3::EmuEpcHelper::sgwDeviceName=veth0 --ns3::EmuEpcHelper::enbDeviceName=veth1 --nEnbs=2 --nUesPerEnb=2"
+  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::sgwDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1 --nEnbs=2 --nUesPerEnb=2"
 
 
 To get a list of the available parameters::
 
-  ./waf --run lena-simple-epc-emu --command="%s --PrintHelp"
+  ./waf --run lena-simple-ngc-emu --command="%s --PrintHelp"
 
 
 
@@ -1006,7 +1006,7 @@ linked modules::
 
 Then run the example program like this::
 
-  ./waf --run lena-simple-epc-emu --command="%s --ns3::EmuEpcHelper::sgwDeviceName=veth0 --ns3::EmuEpcHelper::enbDeviceName=veth1 --simulatorImplementationType=ns3::RealtimeSimulatorImpl --ns3::RealtimeSimulatorImpl::SynchronizationMode=HardLimit"
+  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::sgwDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1 --simulatorImplementationType=ns3::RealtimeSimulatorImpl --ns3::RealtimeSimulatorImpl::SynchronizationMode=HardLimit"
 
 
 note the HardLimit setting, which will cause the program to terminate
@@ -1014,7 +1014,7 @@ if it cannot keep up with real time.
 
 The approach described in this section can be used with any type of
 net device. For instance, [Baldo2014]_ describes how it was used to
-run an emulated LTE-EPC network over a real multi-layer packet-optical
+run an emulated LTE-NGC network over a real multi-layer packet-optical
 transport network.
 
 
@@ -1042,7 +1042,7 @@ It is typically invoked before the simulation begins::
    lteHelper->Attach (ueDevs, enbDev); // attach one or more UEs to a single eNodeB
 
 ``LteHelper::InstallEnbDevice`` and ``LteHelper::InstallUeDevice`` functions
-must have been called before attaching. In an EPC-enabled simulation, it is also
+must have been called before attaching. In an NGC-enabled simulation, it is also
 required to have IPv4 properly pre-installed in the UE.
 
 This method is very simple, but requires you to know exactly which UE belongs to
@@ -1083,7 +1083,7 @@ neighbouring cells, and then attempt to attach to the best one. More details can
 be found in section :ref:`sec-initial-cell-selection` of the Design
 Documentation.
 
-It is important to note that this method only works in EPC-enabled simulations.
+It is important to note that this method only works in NGC-enabled simulations.
 LTE-only simulations must resort to manual attachment method.
 
 Closed Subscriber Group
@@ -1241,7 +1241,7 @@ UE in CONNECTED mode. The two eNodeBs involved in the process are typically
 called the *source eNodeB* and the *target eNodeB*.
 
 In order to enable the execution of X2-based handover in simulation, there are
-two requirements that must be met. Firstly, EPC must be enabled in the
+two requirements that must be met. Firstly, NGC must be enabled in the
 simulation (see :ref:`sec-evolved-packet-core`).
 
 Secondly, an X2 interface must be configured between the two eNodeBs, which
@@ -1260,7 +1260,7 @@ cases. However, users may set the eNodeB to "closed" by setting the boolean
 attribute ``LteEnbRrc::AdmitHandoverRequest`` to `false`. As an example, you can
 run the ``lena-x2-handover`` program and setting the attribute in this way::
 
-   NS_LOG=EpcX2:LteEnbRrc ./waf --run lena-x2-handover --command="%s --ns3::LteEnbRrc::AdmitHandoverRequest=false"
+   NS_LOG=NgcX2:LteEnbRrc ./waf --run lena-x2-handover --command="%s --ns3::LteEnbRrc::AdmitHandoverRequest=false"
 
 After the above three requirements are fulfilled, the handover procedure can be
 triggered manually or automatically. Each will be presented in the following
@@ -1503,7 +1503,7 @@ and it will output the messages printed by the custom handover trace
 hooks. In order additionally visualize some meaningful logging
 information, you can run the program like this::
 
-    NS_LOG=LteEnbRrc:LteUeRrc:EpcX2 ./waf --run lena-x2-handover
+    NS_LOG=LteEnbRrc:LteUeRrc:NgcX2 ./waf --run lena-x2-handover
 
 
 Frequency Reuse Algorithms
@@ -1794,8 +1794,8 @@ Distributed Fractional Frequency Reuse Algorithm
 ++++++++++++++++++++++++++++++++++++++++++++++++
 
 Distributed Fractional Frequency Reuse requires X2 interface between all eNB to be installed. 
-X2 interfaces can be installed only when EPC is configured, so this FFR scheme can be used only with
-EPC scenarios. 
+X2 interfaces can be installed only when NGC is configured, so this FFR scheme can be used only with
+NGC scenarios. 
 
 With Distributed Fractional Frequency Reuse  Algorithm, eNb uses entire cell bandwidth and there can 
 be two sub-bands: center sub-band and edge sub-band . Within these sub-bands UEs can be served with 
@@ -1996,7 +1996,7 @@ needs. We are looking for the following assumptions in our simulation:
 
  * 46 dBm macrocell Tx power and 10 dBm UE Tx power.
 
- * EPC mode will be used because the X2 handover procedure requires it to be
+ * NGC mode will be used because the X2 handover procedure requires it to be
    enabled.
 
  * Full-buffer downlink and uplink traffic, both in 5 MHz bandwidth, using TCP
@@ -2023,9 +2023,9 @@ assumptions.
                                  2-3-2 formation
    interSiteDistance  500        500 m distance between adjacent macrocell sites
    macroEnbTxPowerDbm 46         46 dBm Tx power for each macrocell
-   epc                1          Enable EPC mode
-   epcDl              1          Enable full-buffer DL traffic
-   epcUl              1          Enable full-buffer UL traffic
+   ngc                1          Enable NGC mode
+   ngcDl              1          Enable full-buffer DL traffic
+   ngcUl              1          Enable full-buffer UL traffic
    useUdp             0          Disable UDP traffic and enable TCP instead
    macroUeDensity     0.00002    Determines number of UEs (translates to 48 UEs
                                  in our simulation)
@@ -2066,7 +2066,7 @@ look as below::
 
    $ ./waf --run="lena-dual-stripe
      --simTime=50 --nBlocks=0 --nMacroEnbSites=7 --nMacroEnbSitesX=2
-     --epc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
+     --ngc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
      --ns3::LteHelper::HandoverAlgorithm=ns3::NoOpHandoverAlgorithm
      --ns3::RadioBearerStatsCalculator::DlRlcOutputFilename=no-op-DlRlcStats.txt
      --ns3::RadioBearerStatsCalculator::UlRlcOutputFilename=no-op-UlRlcStats.txt
@@ -2076,7 +2076,7 @@ look as below::
 
    $ ./waf --run="lena-dual-stripe
      --simTime=50 --nBlocks=0 --nMacroEnbSites=7 --nMacroEnbSitesX=2
-     --epc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
+     --ngc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
      --ns3::LteHelper::HandoverAlgorithm=ns3::A3RsrpHandoverAlgorithm
      --ns3::RadioBearerStatsCalculator::DlRlcOutputFilename=a3-rsrp-DlRlcStats.txt
      --ns3::RadioBearerStatsCalculator::UlRlcOutputFilename=a3-rsrp-UlRlcStats.txt
@@ -2086,7 +2086,7 @@ look as below::
 
    $ ./waf --run="lena-dual-stripe
      --simTime=50 --nBlocks=0 --nMacroEnbSites=7 --nMacroEnbSitesX=2
-     --epc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
+     --ngc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
      --ns3::LteHelper::HandoverAlgorithm=ns3::A2A4RsrqHandoverAlgorithm
      --ns3::RadioBearerStatsCalculator::DlRlcOutputFilename=a2-a4-rsrq-DlRlcStats.txt
      --ns3::RadioBearerStatsCalculator::UlRlcOutputFilename=a2-a4-rsrq-UlRlcStats.txt
@@ -2235,7 +2235,7 @@ what means each eNB uses different FR configuration. User can run ``lena-frequen
 with 6 different FR algorithms: NoOp, Hard FR, Strict FR, Soft FR, Soft FFR and Enhanced FFR.
 To run scenario with Distributed FFR algorithm, user should use ``lena-distributed-ffr``. 
 These two examples are very similar, but they were splitted because Distributed FFR requires 
-EPC to be used, and other algorihtms do not. 
+NGC to be used, and other algorihtms do not. 
 
 To run ``lena-frequency-reuse`` with different Frequency Reuse algorithms, user needs to specify 
 FR algorithm by overriding the default attribute ``ns3::LteHelper::FfrAlgorithm``.
@@ -2293,7 +2293,7 @@ Example command to run ``lena-dual-stripe`` with Hard FR algorithm is presented 
 
    $ ./waf --run="lena-dual-stripe
      --simTime=50 --nBlocks=0 --nMacroEnbSites=7 --nMacroEnbSitesX=2
-     --epc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
+     --ngc=1 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
      --ns3::LteHelper::HandoverAlgorithm=ns3::NoOpHandoverAlgorithm
      --ns3::LteHelper::FfrAlgorithm=ns3::LteFrHardAlgorithm
      --ns3::RadioBearerStatsCalculator::DlRlcOutputFilename=no-op-DlRlcStats.txt
@@ -2307,7 +2307,7 @@ with Hard FR algorithm is presented below::
 
    $ ./waf --run="lena-dual-stripe
      --simTime=50 --nBlocks=0 --nMacroEnbSites=7 --nMacroEnbSitesX=2
-     --epc=0 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
+     --ngc=0 --useUdp=0 --outdoorUeMinSpeed=16.6667 --outdoorUeMaxSpeed=16.6667
      --ns3::LteHelper::HandoverAlgorithm=ns3::NoOpHandoverAlgorithm
      --ns3::LteHelper::FfrAlgorithm=ns3::LteFrHardAlgorithm
      --ns3::RadioBearerStatsCalculator::DlRlcOutputFilename=no-op-DlRlcStats.txt
@@ -2363,7 +2363,7 @@ activation that the output is as expected. In detail:
 
  * then check packet transmissions on the data plane, starting by
    enabling the log componbents LteUeNetDevice and the
-   EpcSgwPgwApplication, then EpcEnbApplication, then moving down the
+   NgcSgwPgwApplication, then NgcEnbApplication, then moving down the
    LTE radio stack (PDCP, RLC, MAC, and finally PHY). All this until
    you find where packets stop being processed / forwarded. 
 

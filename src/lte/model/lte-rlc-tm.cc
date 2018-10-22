@@ -110,7 +110,7 @@ LteRlcTm::DoTransmitPdcpPdu (Ptr<Packet> p)
 }
 
 void 
-LteRlcTm::DoSendMcPdcpSdu(EpcX2Sap::UeDataParams params)
+LteRlcTm::DoSendMcPdcpSdu(NgcX2Sap::UeDataParams params)
 {
   NS_LOG_FUNCTION(this);
   DoTransmitPdcpPdu(params.ueData);

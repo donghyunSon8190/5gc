@@ -11,12 +11,12 @@ FIGURES = $(SOURCE)/figures
 # specify dia figures from which .png and .pdf figures need to be built
 
 IMAGES_DIA = \
-	$(FIGURES)/epc-ctrl-arch.dia \
-	$(FIGURES)/epc-data-flow-dl.dia \
-	$(FIGURES)/epc-data-flow-ul.dia \
-	$(FIGURES)/epc-profiling-scenario.dia \
-	$(FIGURES)/epc-topology.dia \
-	$(FIGURES)/epc-topology-x2-enhanced.dia \
+	$(FIGURES)/ngc-ctrl-arch.dia \
+	$(FIGURES)/ngc-data-flow-dl.dia \
+	$(FIGURES)/ngc-data-flow-ul.dia \
+	$(FIGURES)/ngc-profiling-scenario.dia \
+	$(FIGURES)/ngc-topology.dia \
+	$(FIGURES)/ngc-topology-x2-enhanced.dia \
 	$(FIGURES)/eutran-profiling-scenario.dia \
 	$(FIGURES)/ff-example.dia \
 	$(FIGURES)/ff-mac-saps.dia \
@@ -26,11 +26,11 @@ IMAGES_DIA = \
 	$(FIGURES)/lte-arch-ue-ctrl.dia \
 	$(FIGURES)/lte-enb-phy.dia \
 	$(FIGURES)/lte-ue-phy.dia \
-	$(FIGURES)/lte-epc-x2-handover-seq-diagram.dia \
-	$(FIGURES)/lte-epc-e2e-data-protocol-stack.dia \
+	$(FIGURES)/lte-ngc-x2-handover-seq-diagram.dia \
+	$(FIGURES)/lte-ngc-e2e-data-protocol-stack.dia \
 	$(FIGURES)/lte-interference-test-scenario.dia \
 	$(FIGURES)/lte-subframe-structure.dia \
-	$(FIGURES)/lte-epc-x2-interface.dia \
+	$(FIGURES)/lte-ngc-x2-interface.dia \
 	$(FIGURES)/lte-harq-architecture.dia \
 	$(FIGURES)/lte-harq-processes-scheme.dia \
 	$(FIGURES)/ue-meas-consumer.dia \
@@ -55,7 +55,7 @@ IMAGES_DIA = \
 	$(FIGURES)/lte-rlc-data-retx-dl.dia \
 	$(FIGURES)/lte-rlc-data-txon-ul.dia \
 	$(FIGURES)/lte-rlc-data-retx-ul.dia \
-	$(FIGURES)/lte-epc-x2-entity-saps.dia
+	$(FIGURES)/lte-ngc-x2-entity-saps.dia
 
 # specify eps figures from which .png and .pdf figures need to be built
 
@@ -65,21 +65,21 @@ IMAGES_EPS = \
 	$(FIGURES)/lenaThrTestCase1.eps \
 	$(FIGURES)/lenaThrTestCase2.eps \
 	$(FIGURES)/runningTime10s.eps \
-	$(FIGURES)/epcRunningTime.eps \
+	$(FIGURES)/ngcRunningTime.eps \
 	$(FIGURES)/propagationModel.eps \
 	$(FIGURES)/simulationTime.eps \
-	$(FIGURES)/epcSimulationTime.eps \
-	$(FIGURES)/epcEutranRunningTime.eps \
+	$(FIGURES)/ngcSimulationTime.eps \
+	$(FIGURES)/ngcEutranRunningTime.eps \
 	$(FIGURES)/profiling-memory.eps \
 	$(FIGURES)/lte-strongest-cell-handover-algorithm.eps
 
 # rescale pdf figures as necessary
 $(FIGURES)/lte-interference-test-scenario.pdf_width = 3in
-$(FIGURES)/epc-ctrl-arch.pdf_width = 8cm
-$(FIGURES)/epc-topology.pdf_width = 4in
-$(FIGURES)/epc-topology-x2-enhanced.pdf_width = 14cm
+$(FIGURES)/ngc-ctrl-arch.pdf_width = 8cm
+$(FIGURES)/ngc-topology.pdf_width = 4in
+$(FIGURES)/ngc-topology-x2-enhanced.pdf_width = 14cm
 $(FIGURES)/lte-arch-data-rrc-pdcp-rlc.pdf_width = 3in
-$(FIGURES)/lte-epc-e2e-data-protocol-stack.pdf_width = 15cm
+$(FIGURES)/lte-ngc-e2e-data-protocol-stack.pdf_width = 15cm
 $(FIGURES)/ff-mac-saps.pdf_width = 5in
 $(FIGURES)/ff-example.pdf_width = 5in
 $(FIGURES)/lte-arch-enb-data.pdf_width = 6cm 

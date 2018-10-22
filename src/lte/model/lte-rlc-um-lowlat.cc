@@ -59,8 +59,8 @@ LteRlcUmLowLat::LteRlcUmLowLat ()
 {
   NS_LOG_FUNCTION (this);
   m_reassemblingState = WAITING_S0_FULL;
-  m_epcX2RlcUser = new EpcX2RlcSpecificUser<LteRlcUmLowLat> (this);
-  m_epcX2RlcProvider = 0;
+  m_ngcX2RlcUser = new NgcX2RlcSpecificUser<LteRlcUmLowLat> (this);
+  m_ngcX2RlcProvider = 0;
   TxOn_QueingDelay = 0;
  // m_drbId=0;//sjkang
 
@@ -108,8 +108,8 @@ LteRlcUmLowLat::DoDispose ()
   m_sendAssistatInfo.Cancel();
   m_reorderingQueueStatistic.Cancel();
   measuringQusizeQueueDelayStream->close();
-  //delete ( m_epcX2RlcProvider);
-  //delete (m_epcX2RlcUser);
+  //delete ( m_ngcX2RlcProvider);
+  //delete (m_ngcX2RlcUser);
   TxOn_QueingDelay =0;
   m_txBufferSize  = 0;
   LteRlc::DoDispose ();
@@ -131,8 +131,8 @@ LteRlcUmLowLat::DoTransmitPdcpPdu (Ptr<Packet> p)
       p->AddPacketTag (timeTag);
 
 
-      if (m_epcX2RlcProvider !=0 && reporting_start==0){ //sjkang1114
-       EpcX2Sap::AssistantInformationForSplitting info;
+      if (m_ngcX2RlcProvider !=0 && reporting_start==0){ //sjkang1114
+       NgcX2Sap::AssistantInformationForSplitting info;
       std::cout << "will send assistant info from LteRlcUmLowRat" <<std::endl;
       RecordingQueueStatistics(); //sjkang1116
       Simulator::Schedule(MilliSeconds(10),&LteRlcUmLowLat::DoSendAssistantInformation,this, info);
@@ -180,7 +180,7 @@ LteRlcUmLowLat::DoTransmitPdcpPdu (Ptr<Packet> p)
 }
 
 void 
-LteRlcUmLowLat::DoSendMcPdcpSdu(EpcX2Sap::UeDataParams params)
+LteRlcUmLowLat::DoSendMcPdcpSdu(NgcX2Sap::UeDataParams params)
 {
   NS_LOG_FUNCTION(this);
   DoTransmitPdcpPdu(params.ueData);
@@ -1310,11 +1310,11 @@ LteRlcUmLowLat::TriggerReceivePdcpPdu(Ptr<Packet> p)
   {
     NS_LOG_INFO(this << " MmWave Rlc Um LowLat forwards packet to remote PDCP");
     m_ueDataParams.ueData = p;
-    m_epcX2RlcProvider->ReceiveMcPdcpSdu(m_ueDataParams);
+    m_ngcX2RlcProvider->ReceiveMcPdcpSdu(m_ueDataParams);
   }
 }
 void
-LteRlcUmLowLat::DoSendAssistantInformation(EpcX2Sap::AssistantInformationForSplitting info){ //sjkang
+LteRlcUmLowLat::DoSendAssistantInformation(NgcX2Sap::AssistantInformationForSplitting info){ //sjkang
 
 	info.targetCellId = m_ueDataParams.targetCellId;
 	info.sourceCellId = m_ueDataParams.sourceCellId;
@@ -1323,7 +1323,7 @@ LteRlcUmLowLat::DoSendAssistantInformation(EpcX2Sap::AssistantInformationForSpli
     info.rnti = m_rnti;
     info.drbId = (unsigned)m_drbId;
   // m_sendAssistatInfo.Cancel();
-	//m_epcX2RlcProvider->ReceiveAssistantInformation(info);
+	//m_ngcX2RlcProvider->ReceiveAssistantInformation(info);
 	//if(!m_sendAssistatInfo.IsRunning())
 	    //  m_sendAssistatInfo = Simulator::Schedule(MilliSeconds(1),&LteRlcUmLowLat::DoSendAssistantInformation,this, info);
 
@@ -1342,7 +1342,7 @@ m_reorderingTimer.Cancel();
 }
 void
 LteRlcUmLowLat::DoRequestAssistantInfo(){
-	  EpcX2Sap::AssistantInformationForSplitting info;
+	  NgcX2Sap::AssistantInformationForSplitting info;
 		            std::cout << "will send LTE assistant info from LteRlcUm" <<std::endl;
 		            RecordingQueueStatistics();
 

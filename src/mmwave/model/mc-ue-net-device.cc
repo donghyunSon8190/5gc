@@ -54,11 +54,11 @@ TypeId McUeNetDevice::GetTypeId (void)
                                          &McUeNetDevice::GetMtu),
                    MakeUintegerChecker<uint16_t> ())
 	// Common attributes
-	.AddAttribute ("EpcUeNas",
+	.AddAttribute ("NgcUeNas",
                    "The NAS associated to the this NetDevice",
                    PointerValue (),
                    MakePointerAccessor (&McUeNetDevice::m_nas),
-                   MakePointerChecker <EpcUeNas> ())
+                   MakePointerChecker <NgcUeNas> ())
   .AddAttribute ("Imsi",
                    "International Mobile Subscriber Identity assigned to this UE",
                    UintegerValue (0),
@@ -67,7 +67,7 @@ TypeId McUeNetDevice::GetTypeId (void)
    .AddAttribute ("CsgId",
                    "The Closed Subscriber Group (CSG) identity that this UE is associated with, "
                    "i.e., giving the UE access to cells which belong to this particular CSG. "
-                   "This restriction only applies to initial cell selection and EPC-enabled simulation. "
+                   "This restriction only applies to initial cell selection and NGC-enabled simulation. "
                    "This does not revoke the UE's access to non-CSG cells. ",
                    UintegerValue (0),
                    MakeUintegerAccessor (&McUeNetDevice::SetCsgId,
@@ -493,7 +493,7 @@ McUeNetDevice::GetLtePhy (void) const
   return m_ltePhy;
 }
 
-Ptr<EpcUeNas>
+Ptr<NgcUeNas>
 McUeNetDevice::GetNas (void) const
 {
   NS_LOG_FUNCTION (this);

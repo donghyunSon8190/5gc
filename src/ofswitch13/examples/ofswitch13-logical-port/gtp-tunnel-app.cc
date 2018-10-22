@@ -19,7 +19,7 @@
  */
 
 #include "gtp-tunnel-app.h"
-#include <ns3/epc-gtpu-header.h>
+#include <ns3/ngc-gtpu-header.h>
 #include <ns3/tunnel-id-tag.h>
 
 namespace ns3 {

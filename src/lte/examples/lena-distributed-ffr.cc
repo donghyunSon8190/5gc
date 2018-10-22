@@ -26,7 +26,7 @@
 #include "ns3/spectrum-module.h"
 #include "ns3/config-store.h"
 #include <ns3/buildings-helper.h>
-#include "ns3/point-to-point-epc-helper.h"
+#include "ns3/point-to-point-ngc-helper.h"
 #include "ns3/internet-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
@@ -130,11 +130,11 @@ int main (int argc, char *argv[])
   RngSeedManager::SetRun (runId);
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper> ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
   lteHelper->SetHandoverAlgorithmType ("ns3::NoOpHandoverAlgorithm"); // disable automatic handover
 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
   // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -148,7 +148,7 @@ int main (int argc, char *argv[])
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -248,14 +248,14 @@ int main (int argc, char *argv[])
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIfaces;
-  ueIpIfaces = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+  ueIpIfaces = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
   // Assign IP address to UEs, and install applications
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
     {
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
   // Attach a UE to a eNB
@@ -277,7 +277,7 @@ int main (int argc, char *argv[])
       Ptr<Node> ue = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ue->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
 
       for (uint32_t b = 0; b < 1; ++b)
         {
@@ -304,12 +304,12 @@ int main (int argc, char *argv[])
                                                InetSocketAddress (Ipv4Address::GetAny (), ulPort));
           serverApps.Add (ulPacketSinkHelper.Install (remoteHost));
 
-          Ptr<EpcTft> tft = Create<EpcTft> ();
-          EpcTft::PacketFilter dlpf;
+          Ptr<NgcTft> tft = Create<NgcTft> ();
+          NgcTft::PacketFilter dlpf;
           dlpf.localPortStart = dlPort;
           dlpf.localPortEnd = dlPort;
           tft->Add (dlpf);
-          EpcTft::PacketFilter ulpf;
+          NgcTft::PacketFilter ulpf;
           ulpf.remotePortStart = ulPort;
           ulpf.remotePortEnd = ulPort;
           tft->Add (ulpf);

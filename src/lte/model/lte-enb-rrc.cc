@@ -50,7 +50,7 @@
 #include <ns3/mc-enb-pdcp.h>
 #include "ns3/lte-pdcp-tag.h"
 #include <ns3/lte-rlc-sap.h>
-#include <ns3/epc-x2.h>
+#include <ns3/ngc-x2.h>
 
 
 namespace ns3 {
@@ -501,7 +501,7 @@ UeManager::SetupDataRadioBearer (EpsBearer bearer, uint8_t bearerId, uint32_t gt
     }
   drbInfo->m_logicalChannelConfig.bucketSizeDurationMs = 1000;
 
-  EpcX2Sap::RlcSetupRequest req;
+  NgcX2Sap::RlcSetupRequest req;
   req.sourceCellId = m_rrc->GetCellId();
   req.gtpTeid = drbInfo->m_gtpTeid;
   req.lteRnti = m_rnti;
@@ -595,7 +595,7 @@ LteEnbRrc::DoSendReleaseDataRadioBearer (uint64_t imsi, uint16_t rnti, uint8_t b
   Ptr<UeManager> ueManager = GetUeManager (rnti);
   // Bearer de-activation towards UE
   ueManager->ReleaseDataRadioBearer (bearerId);
-  // Bearer de-activation indication towards epc-enb application
+  // Bearer de-activation indication towards ngc-enb application
   m_s1SapProvider->DoSendReleaseIndication (imsi,rnti,bearerId);
 }
 
@@ -659,9 +659,9 @@ UeManager::PrepareHandover (uint16_t cellId) //source eNB
     case CONNECTED_NORMALLY:
       {
         m_targetCellId = cellId;
-        EpcX2SapProvider::HandoverRequestParams params;
+        NgcX2SapProvider::HandoverRequestParams params;
        params.oldEnbUeX2apId = m_rnti;
-        params.cause          = EpcX2SapProvider::HandoverDesirableForRadioReason;
+        params.cause          = NgcX2SapProvider::HandoverDesirableForRadioReason;
         params.sourceCellId   = m_rrc->m_cellId;
         params.targetCellId   = cellId;
          params.lteCellId = m_rrc->GetLteCellId();
@@ -798,7 +798,7 @@ UeManager::SendRrcConnectionReconfigurationTimout(LteRrcSap::RrcConnectionReconf
 		return;
 }
 void 
-UeManager::RecvHandoverRequestAckAtLte(EpcX2SapUser::HandoverRequestAckParams params){ //sjkang LTE eNB would send message to UE
+UeManager::RecvHandoverRequestAckAtLte(NgcX2SapUser::HandoverRequestAckParams params){ //sjkang LTE eNB would send message to UE
 	 std::cout << "LTE Enb will send RRC Connection Reconfiguration message to UE "<<
 			 Simulator::Now().GetSeconds()<<std::endl;
 	Ptr<Packet> encodedHandoverCommand = params.rrcContext;
@@ -806,7 +806,7 @@ UeManager::RecvHandoverRequestAckAtLte(EpcX2SapUser::HandoverRequestAckParams pa
 	   m_rrc->m_rrcSapUser->SendRrcConnectionReconfiguration (m_rnti, handoverCommand);
 	 }
 void
-UeManager::RecvHandoverRequestAck (EpcX2SapUser::HandoverRequestAckParams params) //source mmWave eNB
+UeManager::RecvHandoverRequestAck (NgcX2SapUser::HandoverRequestAckParams params) //source mmWave eNB
 {
   NS_LOG_FUNCTION (this);
 
@@ -846,7 +846,7 @@ std::cout << "---------------------Source eNB receives Handover Request Ack ----
   //std::cout << handoverCommand.haveRadioResourceConfigDedicated << std::endl;
 
   m_rrc->m_handoverStartTrace (m_imsi, m_rrc->m_cellId, m_rnti, handoverCommand.mobilityControlInfo.targetPhysCellId);
-  EpcX2SapProvider::SnStatusTransferParams sst;
+  NgcX2SapProvider::SnStatusTransferParams sst;
   sst.oldEnbUeX2apId = params.oldEnbUeX2apId;
   sst.newEnbUeX2apId = params.newEnbUeX2apId;
   sst.sourceCellId = params.sourceCellId;
@@ -861,7 +861,7 @@ std::cout << "---------------------Source eNB receives Handover Request Ack ----
       if (0 != drbIt->second->m_rlc->GetObject<LteRlcAm> ())
         {
           LtePdcp::Status status = drbIt->second->m_pdcp->GetStatus ();
-          EpcX2Sap::ErabsSubjectToStatusTransferItem i;
+          NgcX2Sap::ErabsSubjectToStatusTransferItem i;
           i.dlPdcpSn = status.txSn;
           i.ulPdcpSn = status.rxSn;
           std::cout << "Send SN Status " << i.dlPdcpSn << "\t" <<i.ulPdcpSn << std::endl;
@@ -870,7 +870,7 @@ std::cout << "---------------------Source eNB receives Handover Request Ack ----
     }
   m_rrc->m_x2SapProvider->SendSnStatusTransfer (sst);
 
-  // on a mmWave eNB, for a UeManager of an MC device, notify the EpcX2 class that it has to forward the incoming packets
+  // on a mmWave eNB, for a UeManager of an MC device, notify the NgcX2 class that it has to forward the incoming packets
   if(m_rrc->m_ismmWave && (m_isMc ||m_isMc_2)) //modification by sjkang
   {
     NS_LOG_INFO("Notify the X2 that packets with a certain TEID must be forwarded to the targetCell");
@@ -1075,11 +1075,11 @@ UeManager::ForwardRlcBuffers(Ptr<LteRlc> rlc, Ptr<LtePdcp> pdcp, uint32_t gtpTei
    while (!m_x2forwardingBuffer.empty())
   {
     NS_LOG_DEBUG(this << " Forwarding m_x2forwardingBuffer to target eNB, gtpTeid = " << gtpTeid );
-    EpcX2Sap::UeDataParams params;
+    NgcX2Sap::UeDataParams params;
     params.sourceCellId = m_rrc->m_cellId;
     params.targetCellId = m_targetCellId;
 
- //   EpcX2Sap::UeDataParams params_2;
+ //   NgcX2Sap::UeDataParams params_2;
   //  params_2.sourceCellId = m_rrc->m_cellId; //sjakng
    // params_2.targetCellId = m_secondMmWaveCellID; //sjkang
 
@@ -1236,7 +1236,7 @@ UeManager::ForwardRlcBuffers(Ptr<LteRlc> rlc, Ptr<LtePdcp> pdcp, uint32_t gtpTei
    for (iter = m_x2forwardingBuffer.begin(); iter!=m_x2forwardingBuffer.end(); iter ++)
   {
     NS_LOG_DEBUG(this << " Forwarding m_x2forwardingBuffer to target eNB, gtpTeid = " << gtpTeid );
-    EpcX2Sap::UeDataParams params;
+    NgcX2Sap::UeDataParams params;
     params.sourceCellId = m_rrc->m_cellId;
     params.targetCellId = m_targetCellId;
     params.gtpTeid = gtpTeid;
@@ -1376,7 +1376,7 @@ UeManager::SendData (uint8_t bid, Ptr<Packet> p)
           NS_LOG_INFO ("forwarding incoming pkts to target eNB over X2-U");
           NS_LOG_LOGIC ("forwarding data to target eNB over X2-U");
           uint8_t drbid = Bid2Drbid (bid);        
-          EpcX2Sap::UeDataParams params;
+          NgcX2Sap::UeDataParams params;
           params.sourceCellId = m_rrc->m_cellId;
           params.targetCellId = m_targetCellId;
           params.gtpTeid = GetDataRadioBearerInfo (drbid)->m_gtpTeid;
@@ -1405,16 +1405,16 @@ UeManager::SendData (uint8_t bid, Ptr<Packet> p)
     }
 }
 
-std::vector<EpcX2Sap::ErabToBeSetupItem>
+std::vector<NgcX2Sap::ErabToBeSetupItem>
 UeManager::GetErabList ()
 {
   NS_LOG_FUNCTION (this);
-  std::vector<EpcX2Sap::ErabToBeSetupItem> ret;
+  std::vector<NgcX2Sap::ErabToBeSetupItem> ret;
   for (std::map <uint8_t, Ptr<LteDataRadioBearerInfo> >::iterator it =  m_drbMap.begin ();
        it != m_drbMap.end ();
        ++it)
     {
-      EpcX2Sap::ErabToBeSetupItem etbsi;
+      NgcX2Sap::ErabToBeSetupItem etbsi;
       etbsi.erabId = it->second->m_epsBearerIdentity;
       etbsi.erabLevelQosParameters = it->second->m_epsBearer;
       etbsi.dlForwarding = false;
@@ -1433,7 +1433,7 @@ UeManager::SendUeContextRelease ()
     {
     case HANDOVER_PATH_SWITCH:
       NS_LOG_INFO ("Send UE CONTEXT RELEASE from target eNB to source eNB");
-      EpcX2SapProvider::UeContextReleaseParams ueCtxReleaseParams;
+      NgcX2SapProvider::UeContextReleaseParams ueCtxReleaseParams;
       ueCtxReleaseParams.oldEnbUeX2apId = m_sourceX2apId;
       ueCtxReleaseParams.newEnbUeX2apId = m_rnti;
       ueCtxReleaseParams.sourceCellId = m_sourceCellId;
@@ -1474,10 +1474,10 @@ UeManager::RecvHandoverPreparationFailure (uint16_t cellId)
 }
 
 void 
-UeManager::RecvSnStatusTransfer (EpcX2SapUser::SnStatusTransferParams params)
+UeManager::RecvSnStatusTransfer (NgcX2SapUser::SnStatusTransferParams params)
 {
   NS_LOG_FUNCTION (this);
-  for (std::vector<EpcX2Sap::ErabsSubjectToStatusTransferItem>::iterator erabIt 
+  for (std::vector<NgcX2Sap::ErabsSubjectToStatusTransferItem>::iterator erabIt 
          = params.erabsSubjectToStatusTransferList.begin ();
        erabIt != params.erabsSubjectToStatusTransferList.end ();
        ++erabIt)
@@ -1497,7 +1497,7 @@ UeManager::RecvSnStatusTransfer (EpcX2SapUser::SnStatusTransferParams params)
 }
 
 void 
-UeManager::RecvUeContextRelease (EpcX2SapUser::UeContextReleaseParams params)
+UeManager::RecvUeContextRelease (NgcX2SapUser::UeContextReleaseParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -1515,7 +1515,7 @@ UeManager::RecvUeContextRelease (EpcX2SapUser::UeContextReleaseParams params)
 }
 
 void
-UeManager::RecvRlcSetupRequest (EpcX2SapUser::RlcSetupRequest params) // TODO only on MC
+UeManager::RecvRlcSetupRequest (NgcX2SapUser::RlcSetupRequest params) // TODO only on MC
 {
 	if(m_isMc || m_isMc_2) //sjkang1016
   {
@@ -1532,7 +1532,7 @@ UeManager::RecvRlcSetupRequest (EpcX2SapUser::RlcSetupRequest params) // TODO on
     std::pair<std::map<uint32_t, LteEnbRrc::X2uTeidInfo>::iterator, bool> ret;
     ret = m_rrc->m_x2uMcTeidInfoMap.insert (std::pair<uint32_t, LteEnbRrc::X2uTeidInfo> (params.gtpTeid, x2uTeidInfo));
 
-    // TODO overwrite may be legit, as in EpcX2::SetMcEpcX2PdcpUser
+    // TODO overwrite may be legit, as in NgcX2::SetMcNgcX2PdcpUser
     //NS_ASSERT_MSG (ret.second == true, "overwriting a pre-existing entry in m_x2uTeidInfoMap");
     NS_LOG_INFO("Added entry in m_x2uMcTeidInfoMap");
     
@@ -1578,17 +1578,17 @@ UeManager::RecvRlcSetupRequest (EpcX2SapUser::RlcSetupRequest params) // TODO on
     if (rlcTypeId != LteRlcSm::GetTypeId ())
     {
       // connect with remote PDCP
-        rlc->SetEpcX2RlcProvider (m_rrc->GetEpcX2RlcProvider());
+        rlc->SetNgcX2RlcProvider (m_rrc->GetNgcX2RlcProvider());
 
-      EpcX2Sap::UeDataParams ueParams;
+      NgcX2Sap::UeDataParams ueParams;
       ueParams.sourceCellId = m_rrc->GetCellId();
       ueParams.targetCellId = rlcInfo->targetCellId; // the LTE cell
       ueParams.gtpTeid = rlcInfo->gtpTeid;
       rlc->SetUeDataParams(ueParams);
     if(m_isMc) //sjkang0328
-      m_rrc->m_x2SapProvider->SetEpcX2RlcUser (params.gtpTeid, rlc->GetEpcX2RlcUser());
+      m_rrc->m_x2SapProvider->SetNgcX2RlcUser (params.gtpTeid, rlc->GetNgcX2RlcUser());
       else if(m_isMc_2)
-      m_rrc->m_x2SapProvider->SetEpcX2RlcUser_2 (params.gtpTeid, rlc->GetEpcX2RlcUser());//sjkang1109
+      m_rrc->m_x2SapProvider->SetNgcX2RlcUser_2 (params.gtpTeid, rlc->GetNgcX2RlcUser());//sjkang1109
     }
     LteEnbCmacSapProvider::LcInfo lcinfo;
     lcinfo.rnti = m_rnti;
@@ -1625,7 +1625,7 @@ UeManager::RecvRlcSetupRequest (EpcX2SapUser::RlcSetupRequest params) // TODO on
     if(m_state != HANDOVER_JOINING) // when performing a secondary cell HO do not ack the LTE eNB
     {
       // Ack the LTE BS, that will trigger the setup in the UE
-      EpcX2Sap::UeDataParams ackParams;
+      NgcX2Sap::UeDataParams ackParams;
       ackParams.sourceCellId = params.targetCellId;
       ackParams.targetCellId = params.sourceCellId;
       ackParams.gtpTeid = params.gtpTeid;
@@ -1737,7 +1737,7 @@ UeManager::RecvRrcConnectionSetupCompleted (LteRrcSap::RrcConnectionSetupComplet
       if((m_firstConnection && m_rrc->m_ismmWave) || (m_firstConnection && m_rrc->m_ismmWave_2))
       {
      	 m_firstConnection = false;
-        EpcX2Sap::SecondaryHandoverParams params;
+        NgcX2Sap::SecondaryHandoverParams params;
         params.oldCellId = m_rrc->m_lteCellId;
         params.targetCellId = m_rrc->m_cellId;
         params.imsi = m_imsi;
@@ -1769,7 +1769,7 @@ UeManager::RecvRrcConnectionSetupCompleted (LteRrcSap::RrcConnectionSetupComplet
         		  m_rrc->m_secondMmWaveCellForImsiMap.find(m_imsi)->second);//sjkang0205
             m_mmWaveCellId_first = m_rrc->m_bestMmWaveCellForImsiMap.find(m_imsi)->second; //sjkang0313
 
-          EpcX2SapProvider::UeImsiSinrParams params; //sjkang1015
+          NgcX2SapProvider::UeImsiSinrParams params; //sjkang1015
               params.targetCellId =m_rrc->m_bestMmWaveCellForImsiMap.find(m_imsi)->second ; ///backhaul LTE cellID
               params.sourceCellId = m_rrc->GetLteCellId(); // LTE cellID
               params.secondBestCellId =m_rrc->m_secondMmWaveCellForImsiMap.find(m_imsi)->second;
@@ -1777,7 +1777,7 @@ UeManager::RecvRrcConnectionSetupCompleted (LteRrcSap::RrcConnectionSetupComplet
               std::cout<< "LTE eNB " << params.sourceCellId<< " will send  second best mmWave "<<
             		  params.secondBestCellId<< " of UE " << m_imsi <<" to first mmwave eNB "<<params.targetCellId<<std::endl;
               m_rrc->m_firstCellId=m_rrc->m_bestMmWaveCellForImsiMap.find(m_imsi)->second;
-              m_rrc->GetEpcX2SapProvider()->SendUeSinrUpdate (params);
+              m_rrc->GetNgcX2SapProvider()->SendUeSinrUpdate (params);
 
         }
         else
@@ -1788,12 +1788,12 @@ UeManager::RecvRrcConnectionSetupCompleted (LteRrcSap::RrcConnectionSetupComplet
         } 
       }else if (m_rrc->isAdditionalMmWave ){ //sjkang in mmWave Rrc //first connected mmWave will send to LTE eNB
 
-    	              EpcX2SapProvider::UeImsiSinrParams params; //sjkang1015
+    	              NgcX2SapProvider::UeImsiSinrParams params; //sjkang1015
     	              params.targetCellId =m_rrc->GetLteCellId() ; ///backhaul LTE cellID
     	              params.sourceCellId =m_rrc->GetCellId();
     	            	params.secondBestCellId   =m_rrc->GetImsiFromRnti(m_rnti); // UE's imsi
     	              params.m_rnti =m_rnti;
-    	              m_rrc->GetEpcX2SapProvider()->SendUeSinrUpdate (params);
+    	              m_rrc->GetNgcX2SapProvider()->SendUeSinrUpdate (params);
     	              std::cout << "First best mmWave eNB " << m_rrc->GetCellId() << " will send rnti " <<m_rnti<< " info of UE "
     	            		  << m_rrc->GetImsiFromRnti(m_rnti)<<" to LTE eNB"<<std::endl; //sjkang
     	              //params.ueImsiSinrMap = m_ueImsiSinrMap;
@@ -1933,7 +1933,7 @@ UeManager::RecvRrcConnectionReconfigurationCompleted (LteRrcSap::RrcConnectionRe
         if(!m_isMc && !m_isMc_2) //modification by sjkang0313
         {
           NS_LOG_INFO ("Send PATH SWITCH REQUEST to the MME");
-          EpcEnbS1SapProvider::PathSwitchRequestParameters params;
+          NgcEnbS1SapProvider::PathSwitchRequestParameters params;
           params.rnti = m_rnti;
           params.cellId = m_rrc->m_cellId;
           params.mmeUeS1Id = m_imsi;
@@ -1942,7 +1942,7 @@ UeManager::RecvRrcConnectionReconfigurationCompleted (LteRrcSap::RrcConnectionRe
              it != m_drbMap.end ();
              ++it)
           {
-            EpcEnbS1SapProvider::BearerToBeSwitched b;
+            NgcEnbS1SapProvider::BearerToBeSwitched b;
             b.epsBearerId = it->second->m_epsBearerIdentity;
             b.teid =  it->second->m_gtpTeid;
             params.bearersToBeSwitched.push_back (b);
@@ -1954,7 +1954,7 @@ UeManager::RecvRrcConnectionReconfigurationCompleted (LteRrcSap::RrcConnectionRe
           // Send "path switch to the LTE eNB"
           // The context release will be sent by the LTE eNB
           NS_LOG_INFO("RRC Reconfiguration completed after secondary cell HO: send path switch to LTE coordinator");
-          EpcX2Sap::SecondaryHandoverCompletedParams params;
+          NgcX2Sap::SecondaryHandoverCompletedParams params;
           params.mmWaveRnti = m_rnti;
           params.oldEnbUeX2apId = m_sourceX2apId;
           params.imsi = m_imsi;
@@ -1973,7 +1973,7 @@ UeManager::RecvRrcConnectionReconfigurationCompleted (LteRrcSap::RrcConnectionRe
 
           }
 
-          // just a placeholder to find the correct X2 socket in EpcX2
+          // just a placeholder to find the correct X2 socket in NgcX2
           // Notify the LTE eNB
           m_rrc->m_handoverEndOkTrace (m_imsi, m_rrc->m_cellId, m_rnti);
           m_rrc->m_x2SapProvider->SendSecondaryCellHandoverCompleted(params);// will send this messaget to LTE eNB from target eNB
@@ -2088,7 +2088,7 @@ UeManager::RecvRrcSecondaryCellInitialAccessSuccessful(uint16_t mmWaveRnti, uint
   NS_LOG_INFO("Map size " << m_drbMap.size());
 
   // If the Map size is > 0 (Bearers already setup in the LTE cell) perform this action
-  // immediately, otherwise wait for the InitialContextSetupResponse in EpcEnbApplication
+  // immediately, otherwise wait for the InitialContextSetupResponse in NgcEnbApplication
 
   // that calls DataRadioBearerSetupRequest
   if(m_drbMap.size() == 0)  //sjkang1016
@@ -2110,15 +2110,15 @@ UeManager::RecvRrcSecondaryCellInitialAccessSuccessful(uint16_t mmWaveRnti, uint
 
         if (pdcp != 0)
         {
-          // Get the EPC X2 and set it in the PDCP
+          // Get the NGC X2 and set it in the PDCP
         	 std::cout << "MC Enb PDCP will forward packets to two target eNBs" <<std::endl;
 
-          pdcp->SetEpcX2PdcpProvider(m_rrc->GetEpcX2PdcpProvider());
-          m_rrc->GetX2()->SetEpcX2PdcpUser(pdcp->GetEpcX2PdcpUser()); //sjkang1114 //sjkang1115
-       //   pdcp_2->SetEpcX2PdcpProvider(m_rrc->GetEpcX2PdcpProvider()); //sjkang1016
+          pdcp->SetNgcX2PdcpProvider(m_rrc->GetNgcX2PdcpProvider());
+          m_rrc->GetX2()->SetNgcX2PdcpUser(pdcp->GetNgcX2PdcpUser()); //sjkang1114 //sjkang1115
+       //   pdcp_2->SetNgcX2PdcpProvider(m_rrc->GetNgcX2PdcpProvider()); //sjkang1016
 
           // Set UeDataParams
-          EpcX2Sap::UeDataParams params;
+          NgcX2Sap::UeDataParams params;
           params.sourceCellId = m_rrc->GetCellId();
           params.targetCellId = m_mmWaveCellId;
           params.gtpTeid = it->second->m_gtpTeid;
@@ -2130,7 +2130,7 @@ UeManager::RecvRrcSecondaryCellInitialAccessSuccessful(uint16_t mmWaveRnti, uint
 
           // Setup TEIDs for receiving data eventually forwarded over X2-U
           //sjkang1021
-          EpcX2Sap::UeDataParams params_2;
+          NgcX2Sap::UeDataParams params_2;
              params_2.sourceCellId = m_rrc->GetCellId();
              params_2.targetCellId = m_rrc->m_bestMmWaveCellForImsiMap[m_imsi];
              params_2.gtpTeid = it->second->m_gtpTeid;
@@ -2143,17 +2143,17 @@ UeManager::RecvRrcSecondaryCellInitialAccessSuccessful(uint16_t mmWaveRnti, uint
           std::pair<std::map<uint32_t, LteEnbRrc::X2uTeidInfo>::iterator, bool> ret;
           ret = m_rrc->m_x2uMcTeidInfoMap.insert (std::pair<uint32_t, LteEnbRrc::X2uTeidInfo> (it->second->m_gtpTeid, x2uTeidInfo));
           // NS_ASSERT_MSG (ret.second == true, "overwriting a pre-existing entry in m_x2uMcTeidInfoMap");
-          // Setup McEpcX2PdcpUser
-          m_rrc->m_x2SapProvider->SetEpcX2PdcpUser(it->second->m_gtpTeid, pdcp->GetEpcX2PdcpUser());
+          // Setup McNgcX2PdcpUser
+          m_rrc->m_x2SapProvider->SetNgcX2PdcpUser(it->second->m_gtpTeid, pdcp->GetNgcX2PdcpUser());
 
-        //  m_rrc->m_x2SapProvider->SetEpcX2PdcpUser_2(it->second->m_gtpTeid, pdcp->GetEpcX2PdcpUser()); //sjkang1016
+        //  m_rrc->m_x2SapProvider->SetNgcX2PdcpUser_2(it->second->m_gtpTeid, pdcp->GetNgcX2PdcpUser()); //sjkang1016
 
           // Create a remote RLC, pass along the UeDataParams + mmWaveRnti
-          EpcX2SapProvider::RlcSetupRequest rlcParams = it->second->m_rlcSetupRequest;
+          NgcX2SapProvider::RlcSetupRequest rlcParams = it->second->m_rlcSetupRequest;
           rlcParams.targetCellId = m_mmWaveCellId;
           rlcParams.mmWaveRnti = mmWaveRnti; // this is second connection rnti mmWave eNB allocates
 
-          EpcX2SapProvider::RlcSetupRequest rlcParams_2 = it->second->m_rlcSetupRequest; //sjkang1016
+          NgcX2SapProvider::RlcSetupRequest rlcParams_2 = it->second->m_rlcSetupRequest; //sjkang1016
            rlcParams_2.targetCellId = m_rrc->m_bestMmWaveCellForImsiMap[m_imsi]; //this cellID is first connection mmWave cellID
            	  //RntiAndImsi rntiAndImsi; //sjkang0706
            	  //rntiAndImsi = m_rrc->GetImsiFromCellId_Rnti[m_rrc->m_bestMmWaveCellForImsiMap[m_imsi]];
@@ -2202,7 +2202,7 @@ UeManager::RecvRrcSecondaryCellInitialAccessSuccessful(uint16_t mmWaveRnti, uint
 void
 UeManager::waitForReceivingSecondRnti(std::map <uint8_t, Ptr<LteDataRadioBearerInfo> >::iterator it){
 	  if(m_rrc->ImsiTosecondCellRnti[GetImsi()]){
-	      	    EpcX2SapProvider::RlcSetupRequest rlcParams_2 = it->second->m_rlcSetupRequest; //sjkang1016
+	      	    NgcX2SapProvider::RlcSetupRequest rlcParams_2 = it->second->m_rlcSetupRequest; //sjkang1016
 	           rlcParams_2.targetCellId = m_rrc->m_bestMmWaveCellForImsiMap[m_imsi]; //this cellID is first connection mmWave cellID
 	           rlcParams_2.mmWaveRnti = m_rrc->ImsiTosecondCellRnti[GetImsi()]; //sjkang1016 this is first connection rnti of UE
 	           m_rrc->m_x2SapProvider->SendRlcSetupRequest(rlcParams_2); //sjkang1016
@@ -2211,7 +2211,7 @@ UeManager::waitForReceivingSecondRnti(std::map <uint8_t, Ptr<LteDataRadioBearerI
 		  Simulator::Schedule(MilliSeconds(1.0),&UeManager::waitForReceivingSecondRnti, this,it);
 }
 void
-UeManager::RecvSecondaryCellHandoverCompleted(EpcX2Sap::SecondaryHandoverCompletedParams params) //LTE eNB receives Rrc Connection Reconfiguration Completed message
+UeManager::RecvSecondaryCellHandoverCompleted(NgcX2Sap::SecondaryHandoverCompletedParams params) //LTE eNB receives Rrc Connection Reconfiguration Completed message
 {
 
 	//std::cout << m_mmWaveCellId_first <<"\t"<< params.cellId<< std::endl;
@@ -2242,7 +2242,7 @@ UeManager::RecvSecondaryCellHandoverCompleted(EpcX2Sap::SecondaryHandoverComplet
       if (pdcp != 0)
       {
         // Updated UeDataParams in the PDCP instance
-        EpcX2Sap::UeDataParams params;
+        NgcX2Sap::UeDataParams params;
         params.sourceCellId = m_rrc->GetCellId();
         //params.targetCellId = m_mmWaveCellId_first;
         params.targetCellId = m_mmWaveCellId; //sjkang0709
@@ -2277,9 +2277,9 @@ UeManager::RecvSecondaryCellHandoverCompleted(EpcX2Sap::SecondaryHandoverComplet
         std::pair<std::map<uint32_t, LteEnbRrc::X2uTeidInfo>::iterator, bool> ret;
         ret = m_rrc->m_x2uMcTeidInfoMap.insert (std::pair<uint32_t, LteEnbRrc::X2uTeidInfo> (it->second->m_gtpTeid, x2uTeidInfo));
         // NS_ASSERT_MSG (ret.second == true, "overwriting a pre-existing entry in m_x2uMcTeidInfoMap");
-        // Setup McEpcX2PdcpUser
-        m_rrc->m_x2SapProvider->SetEpcX2PdcpUser(it->second->m_gtpTeid, pdcp->GetEpcX2PdcpUser());
-        m_rrc->m_x2SapProvider->SetEpcX2PdcpUser_2(it->second->m_gtpTeid, pdcp->GetEpcX2PdcpUser());
+        // Setup McNgcX2PdcpUser
+        m_rrc->m_x2SapProvider->SetNgcX2PdcpUser(it->second->m_gtpTeid, pdcp->GetNgcX2PdcpUser());
+        m_rrc->m_x2SapProvider->SetNgcX2PdcpUser_2(it->second->m_gtpTeid, pdcp->GetNgcX2PdcpUser());
 
         // Remote RLC already setup
 
@@ -2308,7 +2308,7 @@ UeManager::RecvSecondaryCellHandoverCompleted(EpcX2Sap::SecondaryHandoverComplet
 
   // send ContextRelease to the old mmWave eNB
   NS_LOG_INFO ("Send UE CONTEXT RELEASE from target eNB to source eNB");
-  EpcX2SapProvider::UeContextReleaseParams ueCtxReleaseParams;
+  NgcX2SapProvider::UeContextReleaseParams ueCtxReleaseParams;
   ueCtxReleaseParams.oldEnbUeX2apId = params.oldEnbUeX2apId;
 
   ueCtxReleaseParams.newEnbUeX2apId = m_mmWaveRnti;
@@ -2395,7 +2395,7 @@ UeManager::SendRrcConnectionSwitch(bool useMmWaveConnection)
         else if(!m_rrc->m_ismmWave && !useMmWaveConnection)
         {
           // switch from mmWave to LTE: it will be the mmWave cell that forwards the data back to LTE
-          EpcX2SapProvider::SwitchConnectionParams params;
+          NgcX2SapProvider::SwitchConnectionParams params;
           params.mmWaveRnti = m_mmWaveRnti;
           params.mmWaveCellId = m_mmWaveCellId;
           params.useMmWaveConnection = useMmWaveConnection;
@@ -2452,14 +2452,14 @@ UeManager::RecvConnectionSwitchToMmWave (bool useMmWaveConnection, uint8_t drbid
     if (rlcTypeId != LteRlcSm::GetTypeId ())
     {
       // connect with remote PDCP
-      rlc->SetEpcX2RlcProvider (m_rrc->GetEpcX2RlcProvider());
-      EpcX2Sap::UeDataParams ueParams;
+      rlc->SetNgcX2RlcProvider (m_rrc->GetNgcX2RlcProvider());
+      NgcX2Sap::UeDataParams ueParams;
       ueParams.sourceCellId = m_rrc->GetCellId();
       ueParams.targetCellId = m_rlcMap.find(drbid)->second->targetCellId; // the LTE cell
       ueParams.gtpTeid = m_rlcMap.find(drbid)->second->gtpTeid;
       rlc->SetUeDataParams(ueParams);
-      m_rrc->m_x2SapProvider->SetEpcX2RlcUser (m_rlcMap.find(drbid)->second->gtpTeid, rlc->GetEpcX2RlcUser());
-      m_rrc->m_x2SapProvider->SetEpcX2RlcUser_2 (m_rlcMap.find(drbid)->second->gtpTeid, rlc->GetEpcX2RlcUser()); //sjkang1109
+      m_rrc->m_x2SapProvider->SetNgcX2RlcUser (m_rlcMap.find(drbid)->second->gtpTeid, rlc->GetNgcX2RlcUser());
+      m_rrc->m_x2SapProvider->SetNgcX2RlcUser_2 (m_rlcMap.find(drbid)->second->gtpTeid, rlc->GetNgcX2RlcUser()); //sjkang1109
     }
      m_rrc->m_cmacSapProvider->AddLc (m_rlcMap.find(drbid)->second->lcinfo, rlc->GetLteMacSapUser ());
   }
@@ -2796,7 +2796,7 @@ UeManager::RecvNotifyLteMmWaveHandoverCompleted()
   }
 }
 void
-UeManager::RecvAssistantInfo(EpcX2Sap::AssistantInformationForSplitting params){ //sjkang1115
+UeManager::RecvAssistantInfo(NgcX2Sap::AssistantInformationForSplitting params){ //sjkang1115
 	std::map <uint8_t, Ptr<LteDataRadioBearerInfo> >::iterator it = m_drbMap.find(params.drbId); //sjkang
 	Ptr<McEnbPdcp>mcpdcp =   DynamicCast<McEnbPdcp>(it->second->m_pdcp); ///sjkang1115
 	mcpdcp->DoReceiveAssistantInformation(params);//sjkang1115
@@ -2887,8 +2887,8 @@ LteEnbRrc::LteEnbRrc ()
   m_anrSapUser = new MemberLteAnrSapUser<LteEnbRrc> (this);
   m_ffrRrcSapUser = new MemberLteFfrRrcSapUser<LteEnbRrc> (this);
   m_rrcSapProvider = new MemberLteEnbRrcSapProvider<LteEnbRrc> (this);
-  m_x2SapUser = new EpcX2SpecificEpcX2SapUser<LteEnbRrc> (this);
-  m_s1SapUser = new MemberEpcEnbS1SapUser<LteEnbRrc> (this);
+  m_x2SapUser = new NgcX2SpecificNgcX2SapUser<LteEnbRrc> (this);
+  m_s1SapUser = new MemberNgcEnbS1SapUser<LteEnbRrc> (this);
   m_cphySapUser = new MemberLteEnbCphySapUser<LteEnbRrc> (this);
   m_imsiCellSinrMap.clear();
   m_x2_received_cnt = 0;
@@ -3017,7 +3017,7 @@ LteEnbRrc::GetTypeId (void)
                    "cell. The default value -70 corresponds to -140 dBm and is "
                    "the lowest possible value as defined by Section 6.3.4 of "
                    "3GPP TS 36.133. This restriction, however, only applies to "
-                   "initial cell selection and EPC-enabled simulation.",
+                   "initial cell selection and NGC-enabled simulation.",
                    TypeId::ATTR_GET | TypeId::ATTR_CONSTRUCT,
                    IntegerValue (-70),
                    MakeIntegerAccessor (&LteEnbRrc::m_qRxLevMin),
@@ -3143,44 +3143,44 @@ LteEnbRrc::GetTypeId (void)
 }
 
 void
-LteEnbRrc::SetEpcX2SapProvider (EpcX2SapProvider * s)
+LteEnbRrc::SetNgcX2SapProvider (NgcX2SapProvider * s)
 {
   NS_LOG_FUNCTION (this << s);
   m_x2SapProvider = s;
 }
-EpcX2SapProvider*
-LteEnbRrc::GetEpcX2SapProvider(){
+NgcX2SapProvider*
+LteEnbRrc::GetNgcX2SapProvider(){
 	return m_x2SapProvider;
 }
-EpcX2SapUser*
-LteEnbRrc::GetEpcX2SapUser ()
+NgcX2SapUser*
+LteEnbRrc::GetNgcX2SapUser ()
 {
   NS_LOG_FUNCTION (this);
   return m_x2SapUser;
 }
 
 void 
-LteEnbRrc::SetEpcX2PdcpProvider (EpcX2PdcpProvider * s)
+LteEnbRrc::SetNgcX2PdcpProvider (NgcX2PdcpProvider * s)
 {
   //NS_LOG_UNCOND (this <<"\t" << s <<"\t" <<"sjkang1114");
   m_x2PdcpProvider = s;
 }
 
 void 
-LteEnbRrc::SetEpcX2RlcProvider (EpcX2RlcProvider * s)
+LteEnbRrc::SetNgcX2RlcProvider (NgcX2RlcProvider * s)
 {
   NS_LOG_FUNCTION (this << s);
   m_x2RlcProvider = s;
 }
 
-EpcX2PdcpProvider*
-LteEnbRrc::GetEpcX2PdcpProvider () const
+NgcX2PdcpProvider*
+LteEnbRrc::GetNgcX2PdcpProvider () const
 {
   return m_x2PdcpProvider;
 }
 
-EpcX2RlcProvider*
-LteEnbRrc::GetEpcX2RlcProvider () const
+NgcX2RlcProvider*
+LteEnbRrc::GetNgcX2RlcProvider () const
 {
   return m_x2RlcProvider;
 }
@@ -3263,13 +3263,13 @@ LteEnbRrc::SetLteMacSapProvider (LteMacSapProvider * s) //sjkang1015 for setting
 }
 
 void 
-LteEnbRrc::SetS1SapProvider (EpcEnbS1SapProvider * s)
+LteEnbRrc::SetS1SapProvider (NgcEnbS1SapProvider * s)
 {
   m_s1SapProvider = s;
 }
 
 
-EpcEnbS1SapUser* 
+NgcEnbS1SapUser* 
 LteEnbRrc::GetS1SapUser ()
 {
   return m_s1SapUser;
@@ -3571,7 +3571,7 @@ LteEnbRrc::DoUpdateUeSinrEstimate(LteEnbCphySapUser::UeAssociatedSinrInfo info)
   if(m_lteCellId > 0) // i.e., only if a LTE eNB was actually registered in the scenario 
                       // (this is done when an X2 interface among mmWave eNBs and LTE eNB is added)
   {
-    EpcX2SapProvider::UeImsiSinrParams params;
+    NgcX2SapProvider::UeImsiSinrParams params;
     params.targetCellId = m_lteCellId; ///backhaul LTE cellID
     params.sourceCellId = m_cellId; // mmWave cellID
     params.ueImsiSinrMap = m_ueImsiSinrMap;
@@ -3581,7 +3581,7 @@ LteEnbRrc::DoUpdateUeSinrEstimate(LteEnbCphySapUser::UeAssociatedSinrInfo info)
   }
 
 void 
-LteEnbRrc::DoRecvUeSinrUpdate(EpcX2SapUser::UeImsiSinrParams params)
+LteEnbRrc::DoRecvUeSinrUpdate(NgcX2SapUser::UeImsiSinrParams params)
 {
   NS_LOG_FUNCTION(this<<params.sourceCellId<<params.targetCellId);
   NS_LOG_LOGIC("Recv Ue SINR Update from cell " << params.sourceCellId);
@@ -3749,7 +3749,7 @@ LteEnbRrc::TttBasedHandover_mmWave1(std::map<uint64_t, CellSinrMap>::iterator im
         // already using LTE connection
         NS_LOG_INFO("----- on LTE, switch to new MmWaveCell " << maxSinrCellId << " at time " << Simulator::Now().GetSeconds());
         // trigger ho via X2
-        EpcX2SapProvider::SecondaryHandoverParams params;
+        NgcX2SapProvider::SecondaryHandoverParams params;
         params.imsi = imsi;
         params.targetCellId = maxSinrCellId;
         params.oldCellId = m_lastMmWaveCell[imsi];
@@ -3984,7 +3984,7 @@ LteEnbRrc::TttBasedHandover_mmWave2(std::map<uint64_t, CellSinrMap>::iterator im
         // already using LTE connection
         NS_LOG_UNCOND("----- on LTE, switch to new MmWaveCell " << maxSinrCellId << " at time " << Simulator::Now().GetSeconds());
         // trigger ho via X2
-        EpcX2SapProvider::SecondaryHandoverParams params;
+        NgcX2SapProvider::SecondaryHandoverParams params;
         params.imsi = imsi;
         params.targetCellId = maxSinrCellId;
         params.oldCellId = m_lastMmWaveCell_2[imsi];
@@ -4245,7 +4245,7 @@ LteEnbRrc::PerformHandover(uint64_t imsi, uint16_t index)
       NS_LOG_INFO("PerformHandover ----- handover from " << m_lastMmWaveCell[imsi] << " to " << handoverInfo.targetCellId << " at time " << Simulator::Now().GetSeconds());
 
       // trigger ho via X2
-      EpcX2SapProvider::SecondaryHandoverParams params;
+      NgcX2SapProvider::SecondaryHandoverParams params;
       params.imsi = imsi;
       params.targetCellId = handoverInfo.targetCellId;
 
@@ -4281,7 +4281,7 @@ LteEnbRrc::PerformHandover(uint64_t imsi, uint16_t index)
 
 }
 void
-LteEnbRrc::DoRecvBufferDuplicationMessage(EpcX2Sap::SendBufferDuplicationMessage message){
+LteEnbRrc::DoRecvBufferDuplicationMessage(NgcX2Sap::SendBufferDuplicationMessage message){
 	std::cout << " eNB " <<m_cellId << " receives buffer duplication message "<<"imsi is : " << message.imsi <<"\t"<< message.option<< std::endl;
 
 	GetUeManager(GetRntiFromImsi(message.imsi))->SetRlcBufferForwardMode(message.cellIDforBufferForwarding, message.option);
@@ -4327,7 +4327,7 @@ LteEnbRrc::ThresholdBasedSecondaryCellHandover(std::map<uint64_t, CellSinrMap>::
       //ueMan->SendRrcConnectionSwitch(useMmWaveConnection);
 
       // trigger ho via X2
-      EpcX2SapProvider::SecondaryHandoverParams params;
+      NgcX2SapProvider::SecondaryHandoverParams params;
       params.imsi = imsi;
       params.targetCellId = maxSinrCellId;
       params.oldCellId = m_lastMmWaveCell[imsi];
@@ -4366,7 +4366,7 @@ LteEnbRrc::ThresholdBasedSecondaryCellHandover(std::map<uint64_t, CellSinrMap>::
       // already using LTE connection
       NS_LOG_INFO("----- on LTE, switch to new MmWaveCell " << maxSinrCellId << " at time " << Simulator::Now().GetSeconds());
       // trigger ho via X2
-      EpcX2SapProvider::SecondaryHandoverParams params;
+      NgcX2SapProvider::SecondaryHandoverParams params;
       params.imsi = imsi;
       params.targetCellId = maxSinrCellId;
       params.oldCellId = m_lastMmWaveCell[imsi];
@@ -4385,7 +4385,7 @@ LteEnbRrc::ThresholdBasedSecondaryCellHandover(std::map<uint64_t, CellSinrMap>::
       //ueMan->SendRrcConnectionSwitch(useMmWaveConnection);
 
       // trigger ho via X2
-      EpcX2SapProvider::SecondaryHandoverParams params;
+      NgcX2SapProvider::SecondaryHandoverParams params;
       params.imsi = imsi;
       params.targetCellId = maxSinrCellId;
       params.oldCellId = m_lastMmWaveCell[imsi];
@@ -4535,7 +4535,7 @@ LteEnbRrc::TriggerUeAssociationUpdate()
         			m_secondMmWaveCellForImsiMap[imsi]=secondMaxSinrCellId;//sjkang
 
         	 if (currentSinrDb < 10 or currentSinrDb_2 <10){
-        		// EpcX2SapProvider::SendBufferDuplicationMessage message;
+        		// NgcX2SapProvider::SendBufferDuplicationMessage message;
         		// message.targetCellId = m_lastMmWaveCell[imsi];
         		//message.imsi = imsi;
         		// message.cellIDforBufferForwarding = m_lastMmWaveCell_2[imsi];
@@ -4547,7 +4547,7 @@ LteEnbRrc::TriggerUeAssociationUpdate()
 
         			/*
         			if (currentSinrDb <= 10 && currentSinrDb_2 >= 10 ){ //currentSinrDb_2 is 28G, currentSinrDb is 73G
-        				EpcX2SapProvider::SendBufferDuplicationMessage message;
+        				NgcX2SapProvider::SendBufferDuplicationMessage message;
         				message.targetCellId = m_lastMmWaveCell[imsi];
         				message.imsi = imsi;
         				message.cellIDforBufferForwarding = m_lastMmWaveCell_2[imsi];
@@ -4557,7 +4557,7 @@ LteEnbRrc::TriggerUeAssociationUpdate()
         			}
         			else if(currentSinrDb <5 && currentSinrDb_2<5 && GetUeManager(GetRntiFromImsi(imsi))->GetState() != UeManager::CONNECTION_SETUP
         					&& !onHandoverImsi){
-        				EpcX2SapProvider::SendBufferDuplicationMessage message;
+        				NgcX2SapProvider::SendBufferDuplicationMessage message;
         			    message.targetCellId = m_lastMmWaveCell[imsi];
         			     message.imsi = imsi;
         			     message.cellIDforBufferForwarding = m_lastMmWaveCell_2[imsi];
@@ -4566,7 +4566,7 @@ LteEnbRrc::TriggerUeAssociationUpdate()
         			     m_x2SapProvider->DuplicateRlcBuffer(message);
         			}*/
         			/*else if (currentSinrDb > 10 && currentSinrDb_2 <= 10){
-        				EpcX2SapProvider::SendBufferDuplicationMessage message;
+        				NgcX2SapProvider::SendBufferDuplicationMessage message;
         				   message.targetCellId = m_lastMmWaveCell_2[imsi];
         				   message.imsi = imsi;
         				   message.cellIDforBufferForwarding = m_lastMmWaveCell[imsi];
@@ -4646,7 +4646,7 @@ LteEnbRrc::ThresholdBasedInterRatHandover(std::map<uint64_t, CellSinrMap>::itera
     {
       NS_LOG_INFO("----- handover from " << m_lastMmWaveCell[imsi] << " to " << maxSinrCellId << " channel changed previously");
       // trigger ho via X2
-      EpcX2SapProvider::SecondaryHandoverParams params;
+      NgcX2SapProvider::SecondaryHandoverParams params;
       params.imsi = imsi;
       params.targetCellId = maxSinrCellId;
       params.oldCellId = m_lastMmWaveCell[imsi];
@@ -4676,7 +4676,7 @@ LteEnbRrc::ThresholdBasedInterRatHandover(std::map<uint64_t, CellSinrMap>::itera
     {
       NS_LOG_INFO("----- handover from " << m_lastMmWaveCell[imsi] << " to " << maxSinrCellId);
                   // trigger ho via X2
-      EpcX2SapProvider::SecondaryHandoverParams params;
+      NgcX2SapProvider::SecondaryHandoverParams params;
       params.imsi = imsi;
       params.targetCellId = maxSinrCellId;
       params.oldCellId = m_lastMmWaveCell[imsi];
@@ -4762,7 +4762,7 @@ LteEnbRrc::UpdateUeHandoverAssociation()
             bool useMmWaveConnection = false;
             m_imsiUsingLte[imsi] = !useMmWaveConnection;
             // trigger ho via X2
-            EpcX2SapProvider::SecondaryHandoverParams params;
+            NgcX2SapProvider::SecondaryHandoverParams params;
             params.imsi = imsi;
             params.targetCellId = m_cellId;
             params.oldCellId = m_lastMmWaveCell[imsi];
@@ -4812,7 +4812,7 @@ LteEnbRrc::UpdateUeHandoverAssociation()
 }
 
 void
-LteEnbRrc::DoRecvMcHandoverRequest(EpcX2SapUser::SecondaryHandoverParams params)
+LteEnbRrc::DoRecvMcHandoverRequest(NgcX2SapUser::SecondaryHandoverParams params)
 {
 	NS_LOG_FUNCTION(this);
 	std::cout <<this <<  "  mmWave source Enb " << GetCellId() << " receives McHandoverRequest from LTE eNB  " << Simulator::Now().GetSeconds()<<std::endl; //sjkangHandover
@@ -4891,7 +4891,7 @@ LteEnbRrc::HandoverJoiningTimeout (uint16_t rnti)
     uint16_t sourceCellId = (GetUeManager (rnti)->GetSource()).first;
 
     NS_LOG_INFO ("rejecting handover request from cellId " << sourceCellId);
-    EpcX2SapProvider::HandoverFailedParams res;
+    NgcX2SapProvider::HandoverFailedParams res;
     res.sourceCellId = sourceCellId;
     res.targetCellId = m_cellId;
     res.coordinatorId = m_lteCellId;
@@ -4984,21 +4984,21 @@ LteEnbRrc::DoRecvRrcSecondaryCellInitialAccessSuccessful (uint16_t rnti, uint16_
 }
 
 void 
-LteEnbRrc::DoDataRadioBearerSetupRequest (EpcEnbS1SapUser::DataRadioBearerSetupRequestParameters request)
+LteEnbRrc::DoDataRadioBearerSetupRequest (NgcEnbS1SapUser::DataRadioBearerSetupRequestParameters request)
 {
  	Ptr<UeManager> ueManager = GetUeManager (request.rnti);
    ueManager->SetupDataRadioBearer (request.bearer, request.bearerId, request.gtpTeid, request.transportLayerAddress);
 }
 
 void 
-LteEnbRrc::DoPathSwitchRequestAcknowledge (EpcEnbS1SapUser::PathSwitchRequestAcknowledgeParameters params)
+LteEnbRrc::DoPathSwitchRequestAcknowledge (NgcEnbS1SapUser::PathSwitchRequestAcknowledgeParameters params)
 {
   Ptr<UeManager> ueManager = GetUeManager (params.rnti);
   ueManager->SendUeContextRelease ();
 }
 
 void
-LteEnbRrc::DoRecvHandoverRequest (EpcX2SapUser::HandoverRequestParams req) /// this function is in target eNB
+LteEnbRrc::DoRecvHandoverRequest (NgcX2SapUser::HandoverRequestParams req) /// this function is in target eNB
 {
   NS_LOG_FUNCTION (this);
 std::cout << "Target eNB " << GetCellId()<<" receives Handover Request  from source eNB " << this <<Simulator::Now().GetSeconds()<< std::endl;
@@ -5015,7 +5015,7 @@ std::cout << "Target eNB " << GetCellId()<<" receives Handover Request  from sou
   if (m_admitHandoverRequest == false)
     {
       NS_LOG_INFO ("rejecting handover request from cellId " << req.sourceCellId);
-      EpcX2Sap::HandoverPreparationFailureParams res;
+      NgcX2Sap::HandoverPreparationFailureParams res;
       res.oldEnbUeX2apId =  req.oldEnbUeX2apId;
       res.sourceCellId = req.sourceCellId;
       res.targetCellId = req.targetCellId;
@@ -5042,7 +5042,7 @@ std::cout << "Target eNB " << GetCellId()<<" receives Handover Request  from sou
   ueManager->SetIsMc_2(req.isMC_2); //sjkang
    RegisterImsiToRnti(req.mmeUeS1apId, rnti);
 
-  EpcX2SapProvider::HandoverRequestAckParams ackParams, ackParamsToLte;
+  NgcX2SapProvider::HandoverRequestAckParams ackParams, ackParamsToLte;
   ackParams.oldEnbUeX2apId = req.oldEnbUeX2apId;
   ackParams.newEnbUeX2apId = rnti;
   ackParams.sourceCellId =req.sourceCellId;
@@ -5054,19 +5054,19 @@ std::cout << "Target eNB " << GetCellId()<<" receives Handover Request  from sou
   ackParamsToLte.sourceCellId = GetLteCellId();
   ackParamsToLte.targetCellId = req.targetCellId;
 
-  for (std::vector <EpcX2Sap::ErabToBeSetupItem>::iterator it = req.bearers.begin ();
+  for (std::vector <NgcX2Sap::ErabToBeSetupItem>::iterator it = req.bearers.begin ();
        it != req.bearers.end ();
        ++it)
     {
       ueManager->SetupDataRadioBearer (it->erabLevelQosParameters, it->erabId, it->gtpTeid, it->transportLayerAddress);
-      EpcX2Sap::ErabAdmittedItem i;
+      NgcX2Sap::ErabAdmittedItem i;
       i.erabId = it->erabId;
       ackParams.admittedBearers.push_back (i);
       ackParamsToLte.admittedBearers.push_back(i);
     }
 
   // For secondary cell HO for MC devices, setup RLC instances
-  for (std::vector <EpcX2Sap::RlcSetupRequest>::iterator it = req.rlcRequests.begin();
+  for (std::vector <NgcX2Sap::RlcSetupRequest>::iterator it = req.rlcRequests.begin();
      it != req.rlcRequests.end ();
        ++it)
   {
@@ -5116,7 +5116,7 @@ std::cout << "Target eNB " << GetCellId()<<" receives Handover Request  from sou
 }
 
 void
-LteEnbRrc::DoRecvHandoverRequestAck (EpcX2SapUser::HandoverRequestAckParams params)
+LteEnbRrc::DoRecvHandoverRequestAck (NgcX2SapUser::HandoverRequestAckParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5132,7 +5132,7 @@ LteEnbRrc::DoRecvHandoverRequestAck (EpcX2SapUser::HandoverRequestAckParams para
   ueManager->RecvHandoverRequestAck (params);
 }
 void
-LteEnbRrc::DoRecvHandoverRequestAckToLte (EpcX2SapUser::HandoverRequestAckParams params)//sjkang0416
+LteEnbRrc::DoRecvHandoverRequestAckToLte (NgcX2SapUser::HandoverRequestAckParams params)//sjkang0416
 {
   NS_LOG_FUNCTION (this);
   std::cout << "------------ Lte Enb receives Ack -------------" <<"UE's imsi is "
@@ -5151,7 +5151,7 @@ LteEnbRrc::DoRecvHandoverRequestAckToLte (EpcX2SapUser::HandoverRequestAckParams
 }
 //std::ofstream handoverDelay("handoverDelay.txt");
 void
-LteEnbRrc::DoRecvSecondaryCellHandoverCompleted (EpcX2SapUser::SecondaryHandoverCompletedParams params)
+LteEnbRrc::DoRecvSecondaryCellHandoverCompleted (NgcX2SapUser::SecondaryHandoverCompletedParams params)
 {
   NS_LOG_FUNCTION (this);
 //handoverDelay << Simulator::Now().GetSeconds()<< "\t"<< Simulator::Now().GetMilliSeconds() - StartHandover<<std::endl;
@@ -5166,7 +5166,7 @@ LteEnbRrc::DoRecvSecondaryCellHandoverCompleted (EpcX2SapUser::SecondaryHandover
 }
 
 void
-LteEnbRrc::DoRecvHandoverPreparationFailure (EpcX2SapUser::HandoverPreparationFailureParams params)
+LteEnbRrc::DoRecvHandoverPreparationFailure (NgcX2SapUser::HandoverPreparationFailureParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5184,7 +5184,7 @@ LteEnbRrc::DoRecvHandoverPreparationFailure (EpcX2SapUser::HandoverPreparationFa
 }
 
 void
-LteEnbRrc::DoRecvSnStatusTransfer (EpcX2SapUser::SnStatusTransferParams params)
+LteEnbRrc::DoRecvSnStatusTransfer (NgcX2SapUser::SnStatusTransferParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5200,7 +5200,7 @@ LteEnbRrc::DoRecvSnStatusTransfer (EpcX2SapUser::SnStatusTransferParams params)
 }
 
 void
-LteEnbRrc::DoRecvUeContextRelease (EpcX2SapUser::UeContextReleaseParams params) //source eNB will receive this messag from LTE
+LteEnbRrc::DoRecvUeContextRelease (NgcX2SapUser::UeContextReleaseParams params) //source eNB will receive this messag from LTE
 {
   NS_LOG_FUNCTION (this);
  NS_LOG_LOGIC ("Recv X2 message: UE CONTEXT RELEASE");
@@ -5213,7 +5213,7 @@ LteEnbRrc::DoRecvUeContextRelease (EpcX2SapUser::UeContextReleaseParams params) 
   if(m_interRatHoMode && m_ismmWave)
   {
     NS_LOG_UNCOND("Notify LTE eNB that the handover is completed from cell " << m_cellId << " to " << params.sourceCellId);
-    EpcX2Sap::SecondaryHandoverParams sendParams;
+    NgcX2Sap::SecondaryHandoverParams sendParams;
     sendParams.imsi = GetImsiFromRnti(rnti);
     sendParams.oldCellId = m_lteCellId;
     sendParams.targetCellId = params.sourceCellId;
@@ -5232,7 +5232,7 @@ LteEnbRrc::DoRecvUeContextRelease (EpcX2SapUser::UeContextReleaseParams params) 
 }
 
 void
-LteEnbRrc::DoRecvLteMmWaveHandoverCompleted (EpcX2SapUser::SecondaryHandoverParams params)
+LteEnbRrc::DoRecvLteMmWaveHandoverCompleted (NgcX2SapUser::SecondaryHandoverParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5262,7 +5262,7 @@ LteEnbRrc::DoRecvLteMmWaveHandoverCompleted (EpcX2SapUser::SecondaryHandoverPara
 }
 
 void
-LteEnbRrc::DoRecvConnectionSwitchToMmWave (EpcX2SapUser::SwitchConnectionParams params)
+LteEnbRrc::DoRecvConnectionSwitchToMmWave (NgcX2SapUser::SwitchConnectionParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5273,7 +5273,7 @@ LteEnbRrc::DoRecvConnectionSwitchToMmWave (EpcX2SapUser::SwitchConnectionParams 
 
 
 void
-LteEnbRrc::DoRecvLoadInformation (EpcX2SapUser::LoadInformationParams params)
+LteEnbRrc::DoRecvLoadInformation (NgcX2SapUser::LoadInformationParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5285,7 +5285,7 @@ LteEnbRrc::DoRecvLoadInformation (EpcX2SapUser::LoadInformationParams params)
 }
 
 void
-LteEnbRrc::DoRecvResourceStatusUpdate (EpcX2SapUser::ResourceStatusUpdateParams params)
+LteEnbRrc::DoRecvResourceStatusUpdate (NgcX2SapUser::ResourceStatusUpdateParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5297,7 +5297,7 @@ LteEnbRrc::DoRecvResourceStatusUpdate (EpcX2SapUser::ResourceStatusUpdateParams 
 }
 
 void
-LteEnbRrc::DoRecvRlcSetupRequest (EpcX2SapUser::RlcSetupRequest params)
+LteEnbRrc::DoRecvRlcSetupRequest (NgcX2SapUser::RlcSetupRequest params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5307,7 +5307,7 @@ LteEnbRrc::DoRecvRlcSetupRequest (EpcX2SapUser::RlcSetupRequest params)
 }
 
 void
-LteEnbRrc::DoRecvRlcSetupCompleted (EpcX2SapUser::UeDataParams params)
+LteEnbRrc::DoRecvRlcSetupCompleted (NgcX2SapUser::UeDataParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5327,7 +5327,7 @@ LteEnbRrc::DoRecvRlcSetupCompleted (EpcX2SapUser::UeDataParams params)
 }
 
 void
-LteEnbRrc::DoRecvUeData (EpcX2SapUser::UeDataParams params)
+LteEnbRrc::DoRecvUeData (NgcX2SapUser::UeDataParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5457,7 +5457,7 @@ LteEnbRrc::DoSetPdschConfigDedicated (uint16_t rnti, LteRrcSap::PdschConfigDedic
 }
 
 void
-LteEnbRrc::DoSendLoadInformation (EpcX2Sap::LoadInformationParams params)
+LteEnbRrc::DoSendLoadInformation (NgcX2Sap::LoadInformationParams params)
 {
   NS_LOG_FUNCTION (this);
 
@@ -5746,7 +5746,7 @@ LteEnbRrc::SendSystemInformation ()
   Simulator::Schedule (m_systemInformationPeriodicity, &LteEnbRrc::SendSystemInformation, this);
 }
 void
-LteEnbRrc::DoRecvAssistantInfo(EpcX2Sap::AssistantInformationForSplitting params){ //sjkang1114
+LteEnbRrc::DoRecvAssistantInfo(NgcX2Sap::AssistantInformationForSplitting params){ //sjkang1114
 	NS_LOG_FUNCTION(this);
  ////CellID->Rnti->Imsi
   /* RntiAndImsi rntiAndImsi = GetImsiFromCellId_Rnti[params.sourceCellId]; //sjkang
@@ -5754,10 +5754,10 @@ LteEnbRrc::DoRecvAssistantInfo(EpcX2Sap::AssistantInformationForSplitting params
 	//GetUeManager(GetRntiFromImsi(imsi))->RecvAssistantInfo(params); //sjkang1115
 }
 void
-LteEnbRrc::SetX2(Ptr<EpcX2> x2){ //sjkang1114
+LteEnbRrc::SetX2(Ptr<NgcX2> x2){ //sjkang1114
    m_x2=x2;
 }
-Ptr<EpcX2>
+Ptr<NgcX2>
 LteEnbRrc::GetX2(){ //sjkang1114
 	return m_x2;
 }
@@ -5828,7 +5828,7 @@ LteEnbRrc::TttBasedHandover(std::map<uint64_t, CellSinrMap>::iterator imsiIter, 
         // already using LTE connection
         NS_LOG_UNCOND("----- on LTE, switch to new MmWaveCell " << maxSinrCellId << " at time " << Simulator::Now().GetSeconds());
         // trigger ho via X2
-        EpcX2SapProvider::SecondaryHandoverParams params;
+        NgcX2SapProvider::SecondaryHandoverParams params;
         params.imsi = imsi;
         params.targetCellId = maxSinrCellId;
         params.oldCellId = m_lastMmWaveCell[imsi];

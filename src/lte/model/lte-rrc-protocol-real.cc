@@ -54,14 +54,14 @@ LteUeRrcProtocolReal::LteUeRrcProtocolReal ()
   std::cout << " hi-  " <<std::endl;
 }
 void
-LteUeRrcProtocolReal::SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+LteUeRrcProtocolReal::SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 LteUeRrcProtocolReal::~LteUeRrcProtocolReal ()
 {
 }
 void
-LteUeRrcProtocolReal::DoReceiveLteAssistantInfo(EpcX2Sap::AssistantInformationForSplitting info){
+LteUeRrcProtocolReal::DoReceiveLteAssistantInfo(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 void
@@ -419,7 +419,7 @@ LteEnbRrcProtocolReal::~LteEnbRrcProtocolReal ()
   NS_LOG_FUNCTION (this);
 }
 void
-LteEnbRrcProtocolReal::SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+LteEnbRrcProtocolReal::SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 void
@@ -865,7 +865,7 @@ LteEnbRrcProtocolReal::DoDecodeHandoverCommand (Ptr<Packet> p)
   return msg;
 }
 void
-LteEnbRrcProtocolReal::DoReceiveLteAssistantInfo(EpcX2Sap::AssistantInformationForSplitting info){
+LteEnbRrcProtocolReal::DoReceiveLteAssistantInfo(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 //////////////////////////////////////////////////////
@@ -886,7 +886,7 @@ RealProtocolRlcSapUser::ReceivePdcpPdu (Ptr<Packet> p)
   m_pdcp->DoReceivePdcpPdu (m_rnti, p);
 }
 void
-RealProtocolRlcSapUser:: SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+RealProtocolRlcSapUser:: SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 

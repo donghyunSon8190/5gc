@@ -11,25 +11,25 @@ Overview
 --------
 
 
-An overview of the  LTE-EPC simulation model is depicted in
-the figure :ref:`fig-epc-topology`. There are two main components:
+An overview of the  LTE-NGC simulation model is depicted in
+the figure :ref:`fig-ngc-topology`. There are two main components:
 
  * the LTE Model. This model includes the LTE Radio Protocol
    stack (RRC, PDCP, RLC, MAC, PHY). These entities reside entirely within the
    UE and the eNB nodes.
 
- * the EPC Model. This models includes core network
+ * the NGC Model. This models includes core network
    interfaces, protocols and entities. These entities and protocols
    reside within the SGW, PGW and MME nodes, and partially within the
    eNB nodes.
 
 
-.. _fig-epc-topology:
+.. _fig-ngc-topology:
    
-.. figure:: figures/epc-topology.*
+.. figure:: figures/ngc-topology.*
    :align: center
 
-   Overview of the LTE-EPC simulation model
+   Overview of the LTE-NGC simulation model
 
 
 .. _sec-design-criteria:
@@ -107,27 +107,27 @@ have been considered:
     should be modeled accurately.
 
 
-EPC Model
+NGC Model
 +++++++++
 
 
-The main objective of the EPC model is to provides means for the
+The main objective of the NGC model is to provides means for the
 simulation of end-to-end IP connectivity over the LTE model. 
 To this aim, it supports for the
 interconnection of multiple UEs to the Internet, via a radio access
 network of multiple eNBs connected to a single SGW/PGW node, as shown
-in Figure :ref:`fig-epc-topology`.
+in Figure :ref:`fig-ngc-topology`.
 
-The following design choices have been made for the EPC model:
+The following design choices have been made for the NGC model:
 
  #. The only Packet Data Network (PDN) type supported is IPv4.
  #. The SGW and PGW functional entities are implemented within a single
     node, which is hence referred to as the SGW/PGW node.
  #. The scenarios with inter-SGW mobility are not of interests. Hence, a
     single SGW/PGW node will be present in all simulations scenarios 
- #. A requirement for the EPC model is that it can be used to simulate the
+ #. A requirement for the NGC model is that it can be used to simulate the
     end-to-end performance of realistic applications. Hence, it should
-    be possible to use with the EPC model any regular ns-3 application
+    be possible to use with the NGC model any regular ns-3 application
     working on top of TCP or UDP.
  #. Another requirement is the possibility of simulating network topologies
     with the presence of multiple eNBs, some of which might be
@@ -140,13 +140,13 @@ The following design choices have been made for the EPC model:
     supported for each UE. This includes the necessary classification
     of TCP/UDP traffic over IP done at the UE in the uplink and at the
     PGW in the downlink.
- #. The focus of the EPC model is mainly on the EPC data plane. The
-    accurate modeling of the EPC control plane is, 
+ #. The focus of the NGC model is mainly on the NGC data plane. The
+    accurate modeling of the NGC control plane is, 
     for the time being, not a requirement; hence, the necessary control plane
     interactions can be modeled in a simplified way by leveraging on direct
     interaction among the different simulation objects via the
     provided helper objects.
- #. The focus of the EPC model is on simulations of active users in ECM
+ #. The focus of the NGC model is on simulations of active users in ECM
     connected mode. Hence, all the functionality that is only relevant
     for ECM idle mode (in particular, tracking area update and paging)
     are not modeled at all.
@@ -247,16 +247,16 @@ The architecture of the PHY/channel model of the eNB is represented in figure :r
 
 
 
-EPC Model
+NGC Model
 +++++++++
 
 
 
-EPC data plane
+NGC data plane
 --------------
 
-In Figure :ref:`fig-lte-epc-e2e-data-protocol-stack`, we represent the
-end-to-end LTE-EPC data plane protocol stack as it is modeled in the
+In Figure :ref:`fig-lte-ngc-e2e-data-protocol-stack`, we represent the
+end-to-end LTE-NGC data plane protocol stack as it is modeled in the
 simulator. From the figure, it is evident that the 
 biggest simplification introduced in the data plane model
 is the inclusion of the SGW and PGW functionality within a single
@@ -266,21 +266,21 @@ the LTE radio protocol stack all the protocol layers specified by 3GPP
 are present. 
 
 
-.. _fig-lte-epc-e2e-data-protocol-stack:
+.. _fig-lte-ngc-e2e-data-protocol-stack:
    
-.. figure:: figures/lte-epc-e2e-data-protocol-stack.*
+.. figure:: figures/lte-ngc-e2e-data-protocol-stack.*
    :align: center
 
-   LTE-EPC data plane protocol stack
+   LTE-NGC data plane protocol stack
 
 
 
 
-EPC control plane
+NGC control plane
 -----------------
 
 The architecture of the implementation of the control plane model is
-shown in figure :ref:`fig-epc-ctrl-arch`. The control interfaces that are
+shown in figure :ref:`fig-ngc-ctrl-arch`. The control interfaces that are
 modeled explicitly are the S1-AP, the X2-AP and the S11 interfaces. 
 
 We note that the S1-AP and the S11 interfaces are modeled in a simplified
@@ -296,12 +296,12 @@ link); for this reason, the X2-AP interface model is more realistic.
 
 
 
-.. _fig-epc-ctrl-arch:
+.. _fig-ngc-ctrl-arch:
    
-.. figure:: figures/epc-ctrl-arch.*
+.. figure:: figures/ngc-ctrl-arch.*
    :align: center
 
-   EPC control model
+   NGC control model
 
 
 
@@ -1869,7 +1869,7 @@ assumes that the RLC buffer is always full and can generate a new PDU
 whenever notified by the scheduler. 
 
 The SM RLC is used for simplified simulation scenarios in which only the
-LTE Radio model is used, without the EPC and hence without any IP
+LTE Radio model is used, without the NGC and hence without any IP
 networking support. We note that, although the SM RLC is an
 unrealistic traffic model, it still allows for the correct simulation
 of scenarios with multiple flows belonging to different (non real-time)
@@ -2016,11 +2016,11 @@ the UE goes into one of the CONNECTED states it will never switch back
 to any of the IDLE states. This choice is done for the following reasons:
 
  - as discussed in the section :ref:`sec-design-criteria`, the focus
-   of the LTE-EPC simulation model is on CONNECTED mode
+   of the LTE-NGC simulation model is on CONNECTED mode
  - radio link failure is not currently modeled, as discussed in the
    section :ref:`sec-radio-link-failure`, so an UE cannot go IDLE
    because of radio link failure
- - RRC connection release is currently never triggered neither by the EPC
+ - RRC connection release is currently never triggered neither by the NGC
    nor by the NAS
 
 Still, we chose to model explicitly the IDLE states, because:
@@ -2098,7 +2098,7 @@ assumptions:
  
  - UE's Closed Subscriber Group (CSG) white list contains only one CSG identity.
    
-Also note that initial cell selection is only available for EPC-enabled
+Also note that initial cell selection is only available for NGC-enabled
 simulations. LTE-only simulations must use the manual attachment method. See
 section :ref:`sec-network-attachment` of the User Documentation for more
 information on their differences in usage.
@@ -3044,7 +3044,7 @@ NAS
 ---
 
 
-The focus of the LTE-EPC model is on the NAS Active state, which corresponds to EMM Registered, ECM connected, and RRC connected. Because of this, the following simplifications are made:
+The focus of the LTE-NGC model is on the NAS Active state, which corresponds to EMM Registered, ECM connected, and RRC connected. Because of this, the following simplifications are made:
 
  - EMM and ECM are not modeled explicitly; instead, the NAS entity at the UE will interact directy with the MME to perfom actions that are equivalent (with gross simplifications) to taking the UE to the states EMM Connected and ECM Connected; 
 
@@ -3090,9 +3090,9 @@ S1-U
 +++++++++
 
 The S1-U interface is modeled in a realistic way by encapsulating
-data packets over GTP/UDP/IP, as done in real LTE-EPC systems. The
+data packets over GTP/UDP/IP, as done in real LTE-NGC systems. The
 corresponding protocol stack is shown in Figure
-:ref:`fig-lte-epc-e2e-data-protocol-stack`. As shown in the figure,
+:ref:`fig-lte-ngc-e2e-data-protocol-stack`. As shown in the figure,
 there are two different layers of 
 IP networking. The first one is the end-to-end layer, which provides end-to-end 
 connectivity to the users; this layers involves the UEs, the PGW and
@@ -3101,7 +3101,7 @@ between), but does not involve the eNB. By default, UEs are assigned a public IP
 network, and the PGW gets the address 7.0.0.1, which is used by all
 UEs as the gateway to reach the internet. 
 
-The second layer of IP networking is the EPC local area network. This
+The second layer of IP networking is the NGC local area network. This
 involves all eNB nodes and the SGW/PGW node. This network is
 implemented as a set of point-to-point links which connect each eNB
 with the SGW/PGW node; thus, the SGW/PGW has a set of point-to-point
@@ -3111,20 +3111,20 @@ subnet is the smallest subnet that allows for two distinct host
 addresses). 
 
 As specified by 3GPP, the end-to-end IP
-communications is tunneled over the local EPC IP network using
+communications is tunneled over the local NGC IP network using
 GTP/UDP/IP. In the following, we explain how this tunneling is
-implemented in the EPC model. The explanation is done by discussing the
+implemented in the NGC model. The explanation is done by discussing the
 end-to-end flow of data packets.  
 
-.. _fig-epc-data-flow-dl:
+.. _fig-ngc-data-flow-dl:
    
-.. figure:: figures/epc-data-flow-dl.*
+.. figure:: figures/ngc-data-flow-dl.*
    :align: center
 
    Data flow in the downlink between the internet and the UE
 
 To begin with, we consider the case of the downlink, which is depicted
-in Figure :ref:`fig-epc-data-flow-dl`.   
+in Figure :ref:`fig-ngc-data-flow-dl`.   
 Downlink Ipv4 packets are generated from a generic remote host, and
 addressed to one of the UE device. Internet routing will take care of
 forwarding the packet to the generic NetDevice of the SGW/PGW node
@@ -3135,7 +3135,7 @@ routing rules will cause the incoming packet from the internet to be
 routed through this VirtualNetDevice. Such device starts the
 GTP/UDP/IP tunneling procedure, by forwarding the packet to a
 dedicated application in the SGW/PGW  node which is called
-EpcSgwPgwApplication. This application does the following operations:
+NgcSgwPgwApplication. This application does the following operations:
 
  #. it determines the eNB node to which the UE is attached, by looking
     at the IP destination address (which is the address of the UE);
@@ -3154,7 +3154,7 @@ and GTP headers is sent through one of the S1 links to the eNB, where
 it is received and delivered locally (as the destination address of
 the outmost IP header matches the eNB IP address). The local delivery
 process will forward the packet, via an UDP socket, to a dedicated
-application called EpcEnbApplication. This application then performs
+application called NgcEnbApplication. This application then performs
 the following operations:
 
  #. it removes the GTP header and retrieves the TEID which is
@@ -3170,7 +3170,7 @@ the following operations:
 Note that, at this point, the outmost header of the packet is the
 end-to-end IP header, since the IP/UDP/GTP headers of the S1 protocol
 stack have already been stripped. Upon reception of
-the packet from the EpcEnbApplication, the LteEnbNetDevice will
+the packet from the NgcEnbApplication, the LteEnbNetDevice will
 retrieve the BID from the EpsBearerTag, and based on the BID
 will determine the Radio Bearer instance (and the corresponding PDCP
 and RLC protocol instances) which are then used to forward the packet
@@ -3181,15 +3181,15 @@ the UE, which is the end point of the downlink communication.
 
 
 
-.. _fig-epc-data-flow-ul:
+.. _fig-ngc-data-flow-ul:
    
-.. figure:: figures/epc-data-flow-ul.*
+.. figure:: figures/ngc-data-flow-ul.*
    :align: center
 
    Data flow in the uplink between the UE and the internet
 
 
-The case of the uplink is depicted in Figure :ref:`fig-epc-data-flow-ul`.
+The case of the uplink is depicted in Figure :ref:`fig-ngc-data-flow-ul`.
 Uplink IP packets are generated by a generic application inside the UE,
 and forwarded by the local TCP/IP stack to the LteUeNetDevice of the
 UE. The LteUeNetDevice then performs the following operations:
@@ -3206,9 +3206,9 @@ single PDCP and RLC protocol instance for each Radio Bearer, the
 LteEnbNetDevice is able to determine the BID of the packet. This BID
 is then recorded onto an EpsBearerTag, which is added to the
 packet. The LteEnbNetDevice then forwards the packet to the
-EpcEnbApplication via a raw packet socket.
+NgcEnbApplication via a raw packet socket.
 
-Upon receiving the packet, the EpcEnbApplication performs the
+Upon receiving the packet, the NgcEnbApplication performs the
 following operations:
 
  #. it retrieves the BID from the EpsBearerTag in the packet;
@@ -3226,8 +3226,8 @@ received by the corresponding S1-U point-to-point NetDevice of the
 SGW/PGW node, it is delivered locally (as the destination address of
 the outmost IP header matches the address of the point-to-point net
 device). The local delivery process will forward the packet to the
-EpcSgwPgwApplication via the correponding UDP socket. The
-EpcSgwPgwApplication then removes the GTP header and forwards the
+NgcSgwPgwApplication via the correponding UDP socket. The
+NgcSgwPgwApplication then removes the GTP header and forwards the
 packet to the VirtualNetDevice. At this point, the outmost header
 of the packet is the end-to-end IP header. Hence, if the destination
 address within this header is a remote host on the internet, the
@@ -3285,7 +3285,7 @@ point-to-point devices are attached to the point-to-point link.
 
 For a representation of how the X2 interface fits in the overall
 architecture of the LENA simulation model, the reader is referred to
-the figure :ref:`fig-epc-topology`.
+the figure :ref:`fig-ngc-topology`.
 
 The X2 interface implemented in the simulator provides detailed implementation of the following elementary procedures of the Mobility Management functionality [TS36423]_:
 
@@ -3310,7 +3310,7 @@ moments when the UE or eNodeB transition to another RRC state.
 
 .. _fig-x2-based-handover-seq-diagram:
 
-.. figure:: figures/lte-epc-x2-handover-seq-diagram.*
+.. figure:: figures/lte-ngc-x2-handover-seq-diagram.*
    :scale: 80 %
    :align: center
 
@@ -3339,7 +3339,7 @@ The X2 model is an entity that uses services from:
 
   * the S1 application.
 
-    * Currently, it is the EpcEnbApplication.
+    * Currently, it is the NgcEnbApplication.
 
     * It is used to get some information needed for the Elementary Procedures of the X2 messages.
 
@@ -3353,7 +3353,7 @@ Figure :ref:`fig-x2-entity-saps` shows the implentation model of the X2 entity a
 
 .. _fig-x2-entity-saps:
 
-.. figure:: figures/lte-epc-x2-entity-saps.*
+.. figure:: figures/lte-ngc-x2-entity-saps.*
     :width: 700px
     :align: center
 
@@ -3371,11 +3371,11 @@ The X2 model contains two interfaces:
 
   * the X2-U interface. It is used to send the bearer data when there is `DL forwarding`.
 
-Figure :ref:`fig-lte-epc-x2-interface` shows the protocol stacks of the X2-U interface and X2-C interface modeled in the simulator.
+Figure :ref:`fig-lte-ngc-x2-interface` shows the protocol stacks of the X2-U interface and X2-C interface modeled in the simulator.
 
-.. _fig-lte-epc-x2-interface:
+.. _fig-lte-ngc-x2-interface:
 
-.. figure:: figures/lte-epc-x2-interface.*          
+.. figure:: figures/lte-ngc-x2-interface.*          
     :align: center
 
     X2 interface protocol stacks
@@ -3411,9 +3411,9 @@ X2 Service Interface
 
 The X2 service interface is used by the RRC entity to send and receive messages of the X2 procedures. It is divided into two parts:
 
-  * the ``EpcX2SapProvider`` part is provided by the X2 entity and used by the RRC entity and
+  * the ``NgcX2SapProvider`` part is provided by the X2 entity and used by the RRC entity and
 
-  * the ``EpcX2SapUser`` part is provided by the RRC entity and used by the RRC enity.
+  * the ``NgcX2SapUser`` part is provided by the RRC entity and used by the RRC enity.
 
 The primitives that are supported in our X2-C model are described in the following subsections.
 
@@ -3453,28 +3453,28 @@ As a first example, we show here how the load information primitive
 can be used. We assume that the LteEnbRrc has been modified to include
 the following new member variables::
 
-  std::vector<EpcX2Sap::UlInterferenceOverloadIndicationItem> 
+  std::vector<NgcX2Sap::UlInterferenceOverloadIndicationItem> 
     m_currentUlInterferenceOverloadIndicationList;
-  std::vector <EpcX2Sap::UlHighInterferenceInformationItem> 
+  std::vector <NgcX2Sap::UlHighInterferenceInformationItem> 
     m_currentUlHighInterferenceInformationList;
-  EpcX2Sap::RelativeNarrowbandTxBand m_currentRelativeNarrowbandTxBand;
+  NgcX2Sap::RelativeNarrowbandTxBand m_currentRelativeNarrowbandTxBand;
 
 
 for a detailed description of the type of these variables, we suggest
-to consult the file ``epc-x2-sap.h``, the corresponding doxygen
+to consult the file ``ngc-x2-sap.h``, the corresponding doxygen
 documentation, and the references therein to the relevant sections of
 3GPP TS 36.423. Now, assume that at run time these variables have been
 set to meaningful values following the specifications just
 mentioned. Then, you can add the following code in the LteEnbRrc class
 implementation in order to send a load information primitive::
 
-  EpcX2Sap::CellInformationItem cii;
+  NgcX2Sap::CellInformationItem cii;
   cii.sourceCellId = m_cellId;
   cii.ulInterferenceOverloadIndicationList = m_currentUlInterferenceOverloadIndicationList;
   cii.ulHighInterferenceInformationList = m_currentUlHighInterferenceInformationList;
   cii.relativeNarrowbandTxBand = m_currentRelativeNarrowbandTxBand;
 
-  EpcX2Sap::LoadInformationParams params;
+  NgcX2Sap::LoadInformationParams params;
   params.targetCellId = cellId;
   params.cellInformationList.push_back (cii);
   m_x2SapProvider->SendLoadInformation (params);
@@ -3489,16 +3489,16 @@ In the following second example we show how the resource
 status update primitive is used. We assume that the LteEnbRrc has been
 modified to include the following new member variable::
 
-  EpcX2Sap::CellMeasurementResultItem m_cmri;
+  NgcX2Sap::CellMeasurementResultItem m_cmri;
 
 
-similarly to before, we refer to ``epc-x2-sap.h`` and the references
+similarly to before, we refer to ``ngc-x2-sap.h`` and the references
 therein for detailed information about this variable type.
 Again, we assume that the variable has been already set to a
 meaningful value. Then, you can add the following code in order to
 send a resource status update:: 
 
-  EpcX2Sap::ResourceStatusUpdateParams params;
+  NgcX2Sap::ResourceStatusUpdateParams params;
   params.targetCellId = cellId;
   params.cellMeasurementResultList.push_back (m_cmri);
   m_x2SapProvider->SendResourceStatusUpdate (params);
@@ -4115,18 +4115,18 @@ various components. These objects are:
    access network, as well as of coordinating the setup and release of
    EPS bearers. The ``LteHelper`` class provides both the API
    definition and its implementation.  
- * ``EpcHelper``, which takes care of the configuration of the Evolved
-   Packet Core. The ``EpcHelper`` class is an abstract base class
+ * ``NgcHelper``, which takes care of the configuration of the Evolved
+   Packet Core. The ``NgcHelper`` class is an abstract base class
    which only provides the API definition; the implementation is delegated
-   to child classes in order to allow for different EPC network
+   to child classes in order to allow for different NGC network
    models.
 
 It is possible to create a simple LTE-only simulations by
-using ``LteHelper`` alone, or to create complete LTE-EPC simulations by
-using both ``LteHelper`` and ``EpcHelper``. When both helpers are used, they
+using ``LteHelper`` alone, or to create complete LTE-NGC simulations by
+using both ``LteHelper`` and ``NgcHelper``. When both helpers are used, they
 interact in a master-slave fashion, with ``LteHelper`` being the Master
-that interacts directly with the user program, and ``EpcHelper`` working
-"under the hood" to configure the EPC upon explicit methods called by
+that interacts directly with the user program, and ``NgcHelper`` working
+"under the hood" to configure the NGC upon explicit methods called by
 ``LteHelper``. The exact interactions are displayed in the Figure :ref:`fig-helpers`.
 
 .. _fig-helpers:
@@ -4134,5 +4134,5 @@ that interacts directly with the user program, and ``EpcHelper`` working
 .. figure:: figures/helpers.*
    :align: center
 
-   Sequence diagram of the interaction between LteHelper and EpcHelper
+   Sequence diagram of the interaction between LteHelper and NgcHelper
 

@@ -148,7 +148,7 @@ std::string TypeName (int N)
  * @{
  */
 TYPENAME (dsr::DsrOptionSRHeader::TracedCallback);
-TYPENAME (EpcUeNas::StateTracedCallback);
+TYPENAME (NgcUeNas::StateTracedCallback);
 TYPENAME (Ipv4L3Protocol::DropTracedCallback);
 TYPENAME (Ipv4L3Protocol::SentTracedCallback);
 TYPENAME (Ipv4L3Protocol::TxRxTracedCallback);
@@ -444,8 +444,8 @@ TracedCallbackTypedefTestCase::DoRun (void)
          const dsr::DsrOptionSRHeader &,
          empty, empty, empty, empty);
 
-  CHECK (EpcUeNas::StateTracedCallback,
-         EpcUeNas::State, EpcUeNas::State,
+  CHECK (NgcUeNas::StateTracedCallback,
+         NgcUeNas::State, NgcUeNas::State,
          empty, empty, empty);
 
   CHECK (Ipv4L3Protocol::DropTracedCallback,

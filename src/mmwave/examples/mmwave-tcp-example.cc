@@ -28,8 +28,8 @@
 
 #include "ns3/point-to-point-module.h"
 #include "ns3/mmwave-helper.h"
-#include "ns3/epc-helper.h"
-#include "ns3/mmwave-point-to-point-epc-helper.h"
+#include "ns3/ngc-helper.h"
+#include "ns3/mmwave-point-to-point-ngc-helper.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
@@ -44,7 +44,7 @@ using namespace ns3;
 
 /**
  * A script to simulate the DOWNLINK TCP data over mmWave links
- * with the mmWave devices and the LTE EPC.
+ * with the mmWave devices and the LTE NGC.
  */
 NS_LOG_COMPONENT_DEFINE ("mmWaveTCPExample");
 
@@ -185,8 +185,8 @@ main (int argc, char *argv[])
 	Ptr<MmWaveHelper> mmwaveHelper = CreateObject<MmWaveHelper> ();
 	//mmwaveHelper->SetSchedulerType ("ns3::MmWaveFlexTtiMaxWeightMacScheduler");
 	mmwaveHelper->SetSchedulerType ("ns3::MmWaveFlexTtiMacScheduler");
-	Ptr<MmWavePointToPointEpcHelper>  epcHelper = CreateObject<MmWavePointToPointEpcHelper> ();
-	mmwaveHelper->SetEpcHelper (epcHelper);
+	Ptr<MmWavePointToPointNgcHelper>  ngcHelper = CreateObject<MmWavePointToPointNgcHelper> ();
+	mmwaveHelper->SetNgcHelper (ngcHelper);
 
 	ConfigStore inputConfig;
 	inputConfig.ConfigureDefaults();
@@ -194,7 +194,7 @@ main (int argc, char *argv[])
 	// parse again so you can override default values from the command line
 	cmd.Parse(argc, argv);
 
-	Ptr<Node> pgw = epcHelper->GetPgwNode ();
+	Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
 	// Create a single RemoteHost
 	NodeContainer remoteHostContainer;
@@ -208,7 +208,7 @@ main (int argc, char *argv[])
 	p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
 	p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
 	p2ph.SetChannelAttribute ("Delay", TimeValue (MicroSeconds (1)));
-	NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+	NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
 	Ipv4AddressHelper ipv4h;
 	ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
 	Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -247,7 +247,7 @@ main (int argc, char *argv[])
 	// Assign IP address to UEs, and install applications
 	internet.Install (ueNodes);
 	Ipv4InterfaceContainer ueIpIface;
-	ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+	ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
 
 	mmwaveHelper->AttachToClosestEnb (ueDevs, enbDevs);
 	mmwaveHelper->EnableTraces ();
@@ -255,7 +255,7 @@ main (int argc, char *argv[])
 	// Set the default gateway for the UE
 	Ptr<Node> ueNode = ueNodes.Get (0);
 	Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-	ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+	ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
 
 	// Install and start applications on UEs and remote host
 	uint16_t sinkPort = 20000;

@@ -551,7 +551,7 @@ LteFrSoftAlgorithm::DoReportUeMeas (uint16_t rnti,
 }
 
 void
-LteFrSoftAlgorithm::DoRecvLoadInformation (EpcX2Sap::LoadInformationParams params)
+LteFrSoftAlgorithm::DoRecvLoadInformation (NgcX2Sap::LoadInformationParams params)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_WARN ("Method should not be called, because it is empty");

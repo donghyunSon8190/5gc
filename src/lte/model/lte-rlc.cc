@@ -89,7 +89,7 @@ LteRlc::LteRlc ()
 {
   NS_LOG_FUNCTION (this);
   m_rlcSapProvider = new LteRlcSpecificLteRlcSapProvider<LteRlc> (this);
-  m_epcX2RlcUser = new EpcX2RlcSpecificUser<LteRlc> (this);
+  m_ngcX2RlcUser = new NgcX2RlcSpecificUser<LteRlc> (this);
   m_macSapUser = new LteRlcSpecificLteMacSapUser (this);
  // m_drbId=0;
 //  std::cout << "sjkang1114" << "\t " << this <<"\t"<<"this is rlc address" << std::endl;
@@ -190,23 +190,23 @@ LteRlc::DoNotifyHarqDeliveryFailure (uint8_t harqId)
 }
 
 void
-LteRlc::SetUeDataParams(EpcX2Sap::UeDataParams params)
+LteRlc::SetUeDataParams(NgcX2Sap::UeDataParams params)
 {
   isMc = true;
   m_ueDataParams = params;
 }
 
 void 
-LteRlc::SetEpcX2RlcProvider (EpcX2RlcProvider * s)
+LteRlc::SetNgcX2RlcProvider (NgcX2RlcProvider * s)
 {
-  m_epcX2RlcProvider = s;
- //std::cout << "setting epcX2RlcProvider in lteRlc layer sjkang1114   --->" <<this << std::endl;
+  m_ngcX2RlcProvider = s;
+ //std::cout << "setting ngcX2RlcProvider in lteRlc layer sjkang1114   --->" <<this << std::endl;
 }
 
-EpcX2RlcUser* 
-LteRlc::GetEpcX2RlcUser ()
+NgcX2RlcUser* 
+LteRlc::GetNgcX2RlcUser ()
 {
-  return m_epcX2RlcUser;
+  return m_ngcX2RlcUser;
 }
 void
 LteRlc:: DoRequestAssistantInfo() {//sjkang
@@ -320,7 +320,7 @@ LteRlcSm::ReportBufferStatus ()
 }
 
 void 
-LteRlcSm::DoSendMcPdcpSdu(EpcX2Sap::UeDataParams params)
+LteRlcSm::DoSendMcPdcpSdu(NgcX2Sap::UeDataParams params)
 {
   NS_LOG_FUNCTION(this);
   NS_FATAL_ERROR("Not supported");

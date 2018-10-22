@@ -431,11 +431,11 @@ NS_LOG_FUNCTION(this);
     }
 }
 void
-MmWaveLteUeRrcProtocolReal::SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+MmWaveLteUeRrcProtocolReal::SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 void
-MmWaveLteUeRrcProtocolReal::DoReceiveLteAssistantInfo(EpcX2Sap::AssistantInformationForSplitting info){
+MmWaveLteUeRrcProtocolReal::DoReceiveLteAssistantInfo(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 /////////////////////////////
@@ -963,11 +963,11 @@ MmWaveLteEnbRrcProtocolReal::DoDecodeHandoverCommand (Ptr<Packet> p)
   return msg;
 }
 void
-MmWaveLteEnbRrcProtocolReal::SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+MmWaveLteEnbRrcProtocolReal::SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 void
-MmWaveLteEnbRrcProtocolReal::DoReceiveLteAssistantInfo(EpcX2Sap::AssistantInformationForSplitting info){ //sjkang
+MmWaveLteEnbRrcProtocolReal::DoReceiveLteAssistantInfo(NgcX2Sap::AssistantInformationForSplitting info){ //sjkang
 
 }
 //////////////////////////////////////////////////////
@@ -989,7 +989,7 @@ MmWaveRealProtocolRlcSapUser::ReceivePdcpPdu (Ptr<Packet> p)
 }
 
 void
-MmWaveRealProtocolRlcSapUser:: SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+MmWaveRealProtocolRlcSapUser:: SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 
 }
 

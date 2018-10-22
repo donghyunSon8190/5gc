@@ -32,7 +32,7 @@
 #include <ns3/ipv4-interface-container.h>
 
 #include <ns3/lte-helper.h>
-#include <ns3/point-to-point-epc-helper.h>
+#include <ns3/point-to-point-ngc-helper.h>
 #include <ns3/internet-stack-helper.h>
 #include <ns3/point-to-point-helper.h>
 #include <ns3/ipv4-address-helper.h>
@@ -95,8 +95,8 @@ LteHandoverDelayTestCase::DoRun ()
       << " handover time = " << m_handoverTime.GetSeconds () << "-----");
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper> ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
   lteHelper->SetAttribute ("UseIdealRrc", BooleanValue(m_useIdealRrc));
 
   // SETUP A REMOTE HOST
@@ -106,7 +106,7 @@ LteHandoverDelayTestCase::DoRun ()
   InternetStackHelper inetStackHelper;
   inetStackHelper.Install (remoteHosts);
 
-  // SETUP POINT-TO-POINT CONNECTION BETWEEN REMOTE HOST AND EPC
+  // SETUP POINT-TO-POINT CONNECTION BETWEEN REMOTE HOST AND NGC
 
   PointToPointHelper p2pHelper;
   p2pHelper.SetDeviceAttribute ("DataRate",
@@ -114,7 +114,7 @@ LteHandoverDelayTestCase::DoRun ()
   p2pHelper.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2pHelper.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
 
-  NetDeviceContainer inetDevs = p2pHelper.Install (epcHelper->GetPgwNode (),
+  NetDeviceContainer inetDevs = p2pHelper.Install (ngcHelper->GetUpfNode (),
       remoteHosts.Get (0));
 
   Ipv4AddressHelper addrHelper;
@@ -168,13 +168,13 @@ LteHandoverDelayTestCase::DoRun ()
 
   inetStackHelper.Install(ueNodes);
   Ipv4InterfaceContainer ueIfs;
-  ueIfs = epcHelper->AssignUeIpv4Address (ueDevs);
+  ueIfs = ngcHelper->AssignUeIpv4Address (ueDevs);
 
   // SETUP DEFAULT GATEWAY FOR UE
 
   Ptr<Ipv4StaticRouting> ueStaticRouting =
       ipRoutingHelper.GetStaticRouting (ueNodes.Get (0)->GetObject<Ipv4> ());
-  ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (),
+  ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (),
       1);
 
   // INSTALLING TRACES

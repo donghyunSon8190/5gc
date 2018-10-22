@@ -19,7 +19,7 @@
  */
 
 #include "ns3/lte-helper.h"
-#include "ns3/epc-helper.h"
+#include "ns3/ngc-helper.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
@@ -34,7 +34,7 @@
 using namespace ns3;
 
 /**
- * Sample simulation script for LTE+EPC. It instantiates one eNodeB,
+ * Sample simulation script for LTE+NGC. It instantiates one eNodeB,
  * attaches three UE to eNodeB starts a flow for each UE to  and from a remote host.
  * It also instantiates one dedicated bearer per UE
  */
@@ -58,8 +58,8 @@ main (int argc, char *argv[])
   cmd.Parse (argc, argv);
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper>  epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper>  ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
 
   ConfigStore inputConfig;
   inputConfig.ConfigureDefaults ();
@@ -67,17 +67,17 @@ main (int argc, char *argv[])
   // parse again so you can override default values from the command line
   cmd.Parse (argc, argv);
 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
   // Enable Logging
   LogLevel logLevel = (LogLevel)(LOG_PREFIX_FUNC | LOG_PREFIX_TIME | LOG_LEVEL_ALL);
 
   LogComponentEnable ("BearerDeactivateExample", LOG_LEVEL_ALL);
   LogComponentEnable ("LteHelper", logLevel);
-  LogComponentEnable ("EpcHelper", logLevel);
-  LogComponentEnable ("EpcEnbApplication", logLevel);
-  LogComponentEnable ("EpcSgwPgwApplication", logLevel);
-  LogComponentEnable ("EpcMme", logLevel);
+  LogComponentEnable ("NgcHelper", logLevel);
+  LogComponentEnable ("NgcEnbApplication", logLevel);
+  LogComponentEnable ("NgcSmfUpfApplication", logLevel);
+  LogComponentEnable ("NgcMme", logLevel);
   LogComponentEnable ("LteEnbRrc", logLevel);
 
 
@@ -93,7 +93,7 @@ main (int argc, char *argv[])
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -128,14 +128,14 @@ main (int argc, char *argv[])
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIface;
-  ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
+  ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
   // Assign IP address to UEs, and install applications
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
     {
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
   // Attach a UE to a eNB
@@ -157,7 +157,7 @@ main (int argc, char *argv[])
       bearer.arp.priorityLevel = 15 - (u + 1);
       bearer.arp.preemptionCapability = true;
       bearer.arp.preemptionVulnerability = true;
-      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, EpcTft::Default ());
+      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, NgcTft::Default ());
     }
 
 

@@ -29,7 +29,7 @@
 
 #include <ns3/mobility-helper.h>
 #include <ns3/lte-helper.h>
-#include <ns3/point-to-point-epc-helper.h>
+#include <ns3/point-to-point-ngc-helper.h>
 #include <ns3/internet-stack-helper.h>
 #include <ns3/point-to-point-helper.h>
 #include <ns3/ipv4-address-helper.h>
@@ -75,7 +75,7 @@ LteCellSelectionTestSuite::LteCellSelectionTestSuite ()
   w.push_back (LteCellSelectionTestCase::UeSetup_t (1.0, 0.45, true,
                                                     MilliSeconds (283), 4, 0));
 
-  AddTestCase (new LteCellSelectionTestCase ("EPC, real RRC, RngNum=1",
+  AddTestCase (new LteCellSelectionTestCase ("NGC, real RRC, RngNum=1",
                                              true, false, 60.0, w, 1),
                //                                        isd       rngrun
                TestCase::QUICK);
@@ -98,7 +98,7 @@ LteCellSelectionTestSuite::LteCellSelectionTestSuite ()
   w.push_back (LteCellSelectionTestCase::UeSetup_t (1.0, 0.45, true,
                                                     MilliSeconds (266), 4, 0));
 
-  AddTestCase (new LteCellSelectionTestCase ("EPC, ideal RRC, RngNum=1",
+  AddTestCase (new LteCellSelectionTestCase ("NGC, ideal RRC, RngNum=1",
                                              true, true, 60.0, w, 1),
                //                                        isd      rngrun
                TestCase::QUICK);
@@ -128,11 +128,11 @@ LteCellSelectionTestCase::UeSetup_t::UeSetup_t (
 
 
 LteCellSelectionTestCase::LteCellSelectionTestCase (
-  std::string name, bool isEpcMode, bool isIdealRrc,
+  std::string name, bool isNgcMode, bool isIdealRrc,
   double interSiteDistance,
   std::vector<UeSetup_t> ueSetupList, int64_t rngRun)
   : TestCase (name),
-    m_isEpcMode (isEpcMode),
+    m_isNgcMode (isNgcMode),
     m_isIdealRrc (isIdealRrc),
     m_interSiteDistance (interSiteDistance),
     m_ueSetupList (ueSetupList),
@@ -161,12 +161,12 @@ LteCellSelectionTestCase::DoRun ()
                            StringValue ("ns3::FriisSpectrumPropagationLossModel"));
   lteHelper->SetAttribute ("UseIdealRrc", BooleanValue (m_isIdealRrc));
 
-  Ptr<PointToPointEpcHelper> epcHelper;
+  Ptr<PointToPointNgcHelper> ngcHelper;
 
-  if (m_isEpcMode)
+  if (m_isNgcMode)
     {
-      epcHelper = CreateObject<PointToPointEpcHelper> ();
-      lteHelper->SetEpcHelper (epcHelper);
+      ngcHelper = CreateObject<PointToPointNgcHelper> ();
+      lteHelper->SetNgcHelper (ngcHelper);
     }
 
   /*
@@ -283,10 +283,10 @@ LteCellSelectionTestCase::DoRun ()
       Ptr<LteUeNetDevice> ueDev = (*itDev)->GetObject<LteUeNetDevice> ();
     }
 
-  if (m_isEpcMode)
+  if (m_isNgcMode)
     {
       // Create P-GW node
-      Ptr<Node> pgw = epcHelper->GetPgwNode ();
+      Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
       // Create a single RemoteHost
       NodeContainer remoteHostContainer;
@@ -300,7 +300,7 @@ LteCellSelectionTestCase::DoRun ()
       p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
       p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
       p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-      NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+      NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
       Ipv4AddressHelper ipv4h;
       ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
       Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -313,7 +313,7 @@ LteCellSelectionTestCase::DoRun ()
       // Install the IP stack on the UEs
       internet.Install (ueNodes);
       Ipv4InterfaceContainer ueIpIfaces;
-      ueIpIfaces = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+      ueIpIfaces = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
 
       // Assign IP address to UEs
       for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
@@ -321,10 +321,10 @@ LteCellSelectionTestCase::DoRun ()
           Ptr<Node> ueNode = ueNodes.Get (u);
           // Set the default gateway for the UE
           Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-          ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+          ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
         }
 
-    } // end of if (m_isEpcMode)
+    } // end of if (m_isNgcMode)
   else
     {
       NS_FATAL_ERROR ("No support yet for LTE-only simulations");

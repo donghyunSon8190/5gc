@@ -261,7 +261,7 @@ QosController::ConfigureBorderSwitch (Ptr<const RemoteSwitch> swtch)
 
 // input: SDN Aggregation Switch
 // output: void
-// Explanation: This functions configures SDN aggregation switch. It can sepcify weights and group output ports
+// Explanation: This functions configures SDN aggregation switch. It can specify weights and group output ports
 void
 QosController::ConfigureAggregationSwitch (Ptr<const RemoteSwitch> swtch)
 {

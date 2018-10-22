@@ -90,14 +90,14 @@ private:
   uint32_t m_nDedicatedBearers; // number of UEs in the test
   std::list<CheckPointEvent> m_checkPointEventList;
   std::string m_checkPointEventListName;
-  bool m_epc;
+  bool m_ngc;
   bool m_useUdp;
   std::string m_schedulerType;
   std::string m_handoverAlgorithmType;
   bool m_admitHo;
   bool m_useIdealRrc;
   Ptr<LteHelper> m_lteHelper;
-  Ptr<PointToPointEpcHelper> m_epcHelper;
+  Ptr<PointToPointNgcHelper> m_ngcHelper;
 
   struct BearerData
   {
@@ -167,7 +167,7 @@ LteX2HandoverMeasuresTestCase::LteX2HandoverMeasuresTestCase (uint32_t nEnbs, ui
     m_nDedicatedBearers (nDedicatedBearers),
     m_checkPointEventList (checkPointEventList),
     m_checkPointEventListName (checkPointEventListName),
-    m_epc (true),
+    m_ngc (true),
     m_useUdp (useUdp),
     m_schedulerType (schedulerType),
     m_handoverAlgorithmType (handoverAlgorithmType),
@@ -235,10 +235,10 @@ LteX2HandoverMeasuresTestCase::DoRun ()
   NodeContainer ueNodes;
   ueNodes.Create (m_nUes);
 
-  if (m_epc)
+  if (m_ngc)
     {
-      m_epcHelper = CreateObject<PointToPointEpcHelper> ();
-      m_lteHelper->SetEpcHelper (m_epcHelper);
+      m_ngcHelper = CreateObject<PointToPointNgcHelper> ();
+      m_lteHelper->SetNgcHelper (m_ngcHelper);
     }
 
   // Install Mobility Model in eNBs
@@ -284,7 +284,7 @@ LteX2HandoverMeasuresTestCase::DoRun ()
   Ipv4StaticRoutingHelper ipv4RoutingHelper;
   Ipv4InterfaceContainer ueIpIfaces;
   Ptr<Node> remoteHost;
-  if (m_epc)
+  if (m_ngc)
     {
       // Create a single RemoteHost
       NodeContainer remoteHostContainer;
@@ -298,12 +298,12 @@ LteX2HandoverMeasuresTestCase::DoRun ()
       p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
       p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
       p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-      Ptr<Node> pgw = m_epcHelper->GetPgwNode ();
-      NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+      Ptr<Node> upf = m_ngcHelper->GetUpfNode ();
+      NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
       Ipv4AddressHelper ipv4h;
       ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
       Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
-      // in this container, interface 0 is the pgw, 1 is the remoteHost
+      // in this container, interface 0 is the upf, 1 is the remoteHost
       remoteHostAddr = internetIpIfaces.GetAddress (1);
 
       Ipv4StaticRoutingHelper ipv4RoutingHelper;
@@ -312,17 +312,17 @@ LteX2HandoverMeasuresTestCase::DoRun ()
 
       // Install the IP stack on the UEs
       internet.Install (ueNodes);
-      ueIpIfaces = m_epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevices));
+      ueIpIfaces = m_ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevices));
     }
 
   // attachment (needs to be done after IP stack configuration)
   // all UEs attached to eNB 0 at the beginning
   m_lteHelper->Attach (ueDevices, enbDevices.Get (0));
 
-  if (m_epc)
+  if (m_ngc)
     {
-      bool epcDl = true;
-      bool epcUl = false;
+      bool ngcDl = true;
+      bool ngcUl = false;
       // the rest of this block is copied from lena-dual-stripe
 
 
@@ -343,7 +343,7 @@ LteX2HandoverMeasuresTestCase::DoRun ()
           Ptr<Node> ue = ueNodes.Get (u);
           // Set the default gateway for the UE
           Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ue->GetObject<Ipv4> ());
-          ueStaticRouting->SetDefaultRoute (m_epcHelper->GetUeDefaultGatewayAddress (), 1);
+          ueStaticRouting->SetDefaultRoute (m_ngcHelper->GetUeDefaultGatewayAddress (), 1);
 
           UeData ueData;
 
@@ -358,7 +358,7 @@ LteX2HandoverMeasuresTestCase::DoRun ()
 
               if (m_useUdp)
                 {
-                  if (epcDl)
+                  if (ngcDl)
                     {
                       UdpClientHelper dlClientHelper (ueIpIfaces.GetAddress (u), dlPort);
                       clientApps.Add (dlClientHelper.Install (remoteHost));
@@ -369,7 +369,7 @@ LteX2HandoverMeasuresTestCase::DoRun ()
                       serverApps.Add (sinkContainer);
 
                     }
-                  if (epcUl)
+                  if (ngcUl)
                     {
                       UdpClientHelper ulClientHelper (remoteHostAddr, ulPort);
                       clientApps.Add (ulClientHelper.Install (ue));
@@ -382,7 +382,7 @@ LteX2HandoverMeasuresTestCase::DoRun ()
                 }
               else // use TCP
                 {
-                  if (epcDl)
+                  if (ngcDl)
                     {
                       BulkSendHelper dlClientHelper ("ns3::TcpSocketFactory",
                                                      InetSocketAddress (ueIpIfaces.GetAddress (u), dlPort));
@@ -394,7 +394,7 @@ LteX2HandoverMeasuresTestCase::DoRun ()
                       bearerData.dlSink = sinkContainer.Get (0)->GetObject<PacketSink> ();
                       serverApps.Add (sinkContainer);
                     }
-                  if (epcUl)
+                  if (ngcUl)
                     {
                       BulkSendHelper ulClientHelper ("ns3::TcpSocketFactory",
                                                      InetSocketAddress (remoteHostAddr, ulPort));
@@ -408,23 +408,23 @@ LteX2HandoverMeasuresTestCase::DoRun ()
                     }
                 } // end if (useUdp)
 
-              Ptr<EpcTft> tft = Create<EpcTft> ();
-              if (epcDl)
+              Ptr<NgcTft> tft = Create<NgcTft> ();
+              if (ngcDl)
                 {
-                  EpcTft::PacketFilter dlpf;
+                  NgcTft::PacketFilter dlpf;
                   dlpf.localPortStart = dlPort;
                   dlpf.localPortEnd = dlPort;
                   tft->Add (dlpf);
                 }
-              if (epcUl)
+              if (ngcUl)
                 {
-                  EpcTft::PacketFilter ulpf;
+                  NgcTft::PacketFilter ulpf;
                   ulpf.remotePortStart = ulPort;
                   ulpf.remotePortEnd = ulPort;
                   tft->Add (ulpf);
                 }
 
-              if (epcDl || epcUl)
+              if (ngcDl || ngcUl)
                 {
                   EpsBearer bearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT);
                   m_lteHelper->ActivateDedicatedEpsBearer (ueDevices.Get (u), bearer, tft);
@@ -441,7 +441,7 @@ LteX2HandoverMeasuresTestCase::DoRun ()
         }
 
     }
-  else // (epc == false)
+  else // (ngc == false)
     {
       // for radio bearer activation purposes, consider together home UEs and macro UEs
       for (uint32_t u = 0; u < ueDevices.GetN (); ++u)

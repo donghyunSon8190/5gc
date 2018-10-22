@@ -24,7 +24,7 @@
 #include <ns3/log.h>
 #include <ns3/abort.h>
 #include <ns3/pointer.h>
-#include <ns3/epc-helper.h>
+#include <ns3/ngc-helper.h>
 #include <iostream>
 
 

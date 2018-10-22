@@ -125,10 +125,10 @@ main (int argc, char *argv[])
   // LogLevel logLevel = (LogLevel)(LOG_PREFIX_FUNC | LOG_PREFIX_TIME | LOG_LEVEL_ALL);
 
   // LogComponentEnable ("LteHelper", logLevel);
-  // LogComponentEnable ("EpcHelper", logLevel);
-  // LogComponentEnable ("EpcEnbApplication", logLevel);
-  // LogComponentEnable ("EpcX2", logLevel);
-  // LogComponentEnable ("EpcSgwPgwApplication", logLevel);
+  // LogComponentEnable ("NgcHelper", logLevel);
+  // LogComponentEnable ("NgcEnbApplication", logLevel);
+  // LogComponentEnable ("NgcX2", logLevel);
+  // LogComponentEnable ("NgcSmfUpfApplication", logLevel);
 
   // LogComponentEnable ("LteEnbRrc", logLevel);
   // LogComponentEnable ("LteEnbNetDevice", logLevel);
@@ -157,12 +157,12 @@ main (int argc, char *argv[])
 
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper> epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper> ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
   lteHelper->SetSchedulerType ("ns3::RrFfMacScheduler");
   lteHelper->SetHandoverAlgorithmType ("ns3::NoOpHandoverAlgorithm"); // disable automatic handover
 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
   // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -176,7 +176,7 @@ main (int argc, char *argv[])
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -217,14 +217,14 @@ main (int argc, char *argv[])
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIfaces;
-  ueIpIfaces = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
+  ueIpIfaces = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueLteDevs));
   // Assign IP address to UEs, and install applications
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
     {
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
 
@@ -253,7 +253,7 @@ main (int argc, char *argv[])
       Ptr<Node> ue = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ue->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
 
       for (uint32_t b = 0; b < numBearersPerUe; ++b)
         {
@@ -277,12 +277,12 @@ main (int argc, char *argv[])
                                                InetSocketAddress (Ipv4Address::GetAny (), ulPort));
           serverApps.Add (ulPacketSinkHelper.Install (remoteHost));
 
-          Ptr<EpcTft> tft = Create<EpcTft> ();
-          EpcTft::PacketFilter dlpf;
+          Ptr<NgcTft> tft = Create<NgcTft> ();
+          NgcTft::PacketFilter dlpf;
           dlpf.localPortStart = dlPort;
           dlpf.localPortEnd = dlPort;
           tft->Add (dlpf);
-          EpcTft::PacketFilter ulpf;
+          NgcTft::PacketFilter ulpf;
           ulpf.remotePortStart = ulPort;
           ulpf.remotePortEnd = ulPort;
           tft->Add (ulpf);

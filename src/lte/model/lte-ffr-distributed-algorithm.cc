@@ -621,19 +621,19 @@ LteFfrDistributedAlgorithm::SendLoadInformation (uint16_t targetCellId)
 
   NS_LOG_INFO ("SendLoadInformation to CellId : " << targetCellId );
 
-  std::vector<EpcX2Sap::UlInterferenceOverloadIndicationItem> m_currentUlInterferenceOverloadIndicationList;
-  std::vector <EpcX2Sap::UlHighInterferenceInformationItem>  m_currentUlHighInterferenceInformationList;
-  EpcX2Sap::RelativeNarrowbandTxBand m_currentRelativeNarrowbandTxBand;
+  std::vector<NgcX2Sap::UlInterferenceOverloadIndicationItem> m_currentUlInterferenceOverloadIndicationList;
+  std::vector <NgcX2Sap::UlHighInterferenceInformationItem>  m_currentUlHighInterferenceInformationList;
+  NgcX2Sap::RelativeNarrowbandTxBand m_currentRelativeNarrowbandTxBand;
 
   m_currentRelativeNarrowbandTxBand.rntpPerPrbList = m_dlEdgeRbgMap;
 
-  EpcX2Sap::CellInformationItem cii;
+  NgcX2Sap::CellInformationItem cii;
   cii.sourceCellId = m_cellId;
   cii.ulInterferenceOverloadIndicationList = m_currentUlInterferenceOverloadIndicationList;
   cii.ulHighInterferenceInformationList = m_currentUlHighInterferenceInformationList;
   cii.relativeNarrowbandTxBand = m_currentRelativeNarrowbandTxBand;
 
-  EpcX2Sap::LoadInformationParams params;
+  NgcX2Sap::LoadInformationParams params;
   params.targetCellId = targetCellId;
   params.cellInformationList.push_back (cii);
 
@@ -641,7 +641,7 @@ LteFfrDistributedAlgorithm::SendLoadInformation (uint16_t targetCellId)
 }
 
 void
-LteFfrDistributedAlgorithm::DoRecvLoadInformation (EpcX2Sap::LoadInformationParams params)
+LteFfrDistributedAlgorithm::DoRecvLoadInformation (NgcX2Sap::LoadInformationParams params)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("CellId: " << m_cellId

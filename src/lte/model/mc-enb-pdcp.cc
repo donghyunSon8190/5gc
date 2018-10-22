@@ -27,7 +27,7 @@
 #include "ns3/lte-pdcp-header.h"
 #include "ns3/lte-pdcp-sap.h"
 #include "ns3/lte-pdcp-tag.h"
-#include "ns3/epc-x2-sap.h"
+#include "ns3/ngc-x2-sap.h"
 #include <ctime>
 
 namespace ns3 {
@@ -41,7 +41,7 @@ public:
 
   // Interface provided to lower RLC entity (implemented from LteRlcSapUser)
   virtual void ReceivePdcpPdu (Ptr<Packet> p);
-  virtual void SendLteAssi(EpcX2Sap::AssistantInformationForSplitting);
+  virtual void SendLteAssi(NgcX2Sap::AssistantInformationForSplitting);
 private:
   McPdcpSpecificLteRlcSapUser ();
   McEnbPdcp* m_pdcp;
@@ -62,7 +62,7 @@ McPdcpSpecificLteRlcSapUser::ReceivePdcpPdu (Ptr<Packet> p)
   m_pdcp->DoReceivePdu (p);
 }
 void
-McPdcpSpecificLteRlcSapUser::SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+McPdcpSpecificLteRlcSapUser::SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 	//std::cout << "receive lte info"<<std::endl;
 	m_pdcp->DoReceiveLteAssistantInfo(info);
 
@@ -76,14 +76,14 @@ public:
 
   // Interface provided to lower RLC entity (implemented from LteRlcSapUser)
   virtual void ReceivePdcpPdu (Ptr<Packet> p);
-  virtual void ReceiveLteAssistantInfo(EpcX2Sap::AssistantInformationForSplitting info);
-  virtual void  SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info);
+  virtual void ReceiveLteAssistantInfo(NgcX2Sap::AssistantInformationForSplitting info);
+  virtual void  SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info);
 private:
   AssistantInfoLteRlcSapUser ();
   McEnbPdcp* m_pdcp;
 };
 void
-AssistantInfoLteRlcSapUser::ReceiveLteAssistantInfo(EpcX2Sap::AssistantInformationForSplitting info){
+AssistantInfoLteRlcSapUser::ReceiveLteAssistantInfo(NgcX2Sap::AssistantInformationForSplitting info){
 //	m_pdcp->DoReceiveLteAssistantInfo(info);
 }
 AssistantInfoLteRlcSapUser::AssistantInfoLteRlcSapUser (McEnbPdcp* pdcp)
@@ -101,7 +101,7 @@ AssistantInfoLteRlcSapUser::ReceivePdcpPdu (Ptr<Packet> p)
  // m_pdcp->DoReceiveLteAssistantInfo() (p);
 }
 void
-AssistantInfoLteRlcSapUser:: SendLteAssi(EpcX2Sap::AssistantInformationForSplitting info){
+AssistantInfoLteRlcSapUser:: SendLteAssi(NgcX2Sap::AssistantInformationForSplitting info){
 std::cout << info.Tx_On_Q_Size<< std::endl;
 }
 ///////////////////////////////////////
@@ -113,7 +113,7 @@ McEnbPdcp::McEnbPdcp ()
     m_rlcSapProvider (0),
     m_rnti (0),
     m_lcid (0),
-    m_epcX2PdcpProvider (0),
+    m_ngcX2PdcpProvider (0),
     m_txSequenceNumber (0),
     m_rxSequenceNumber (0),
     m_useMmWaveConnection (false)
@@ -122,7 +122,7 @@ McEnbPdcp::McEnbPdcp ()
   m_pdcpSapProvider = new LtePdcpSpecificLtePdcpSapProvider<McEnbPdcp> (this);
   m_rlcSapUser = new McPdcpSpecificLteRlcSapUser (this);
   m_assistant_rlcSapUser = new McPdcpSpecificLteRlcSapUser(this); //sjkang
-  m_epcX2PdcpUser = new EpcX2PdcpSpecificUser<McEnbPdcp> (this);
+  m_ngcX2PdcpUser = new NgcX2PdcpSpecificUser<McEnbPdcp> (this);
   targetCellId_1 =0; //sjkang
   targetCellId_2=0; //sjkang
   isAlternative = true;
@@ -151,13 +151,13 @@ McEnbPdcp::SetTargetCellIds(uint16_t targetID2, uint16_t targetID1, uint16_t lte
 									bufferOfTargetEnb1.at(count)->AddByteTag (newpdcpTag);
 					bufferOfTargetEnb1.at(count)->PeekHeader(pdcpHeader);
 					pdcpHeader.SetSourceCellId(targetID1);
-					EpcX2Sap::UeDataParams m_ueDataParams;
+					NgcX2Sap::UeDataParams m_ueDataParams;
 					m_ueDataParams.ueData =bufferOfTargetEnb1.at(count);
 					m_ueDataParams.targetCellId = targetID1;
 					m_ueDataParams.sourceCellId = this->m_ueDataParams.sourceCellId;
 					m_ueDataParams.gtpTeid = this -> m_ueDataParams.gtpTeid;
 					std::cout << " will foward bufferd data to mmEnb " << targetID1 << std::endl;
-					m_epcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
+					m_ngcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
 				}
 				isTargetCellId_1 = true;
 				isTargetCellId_2 = false;
@@ -179,12 +179,12 @@ McEnbPdcp::SetTargetCellIds(uint16_t targetID2, uint16_t targetID1, uint16_t lte
 									bufferOfTargetEnb2.at(count)->AddByteTag (newpdcpTag);
 								bufferOfTargetEnb2.at(count)->PeekHeader(pdcpHeader);
 								pdcpHeader.SetSourceCellId(targetID2);
-								EpcX2Sap::UeDataParams m_ueDataParams;
+								NgcX2Sap::UeDataParams m_ueDataParams;
 								m_ueDataParams.ueData =bufferOfTargetEnb2.at(count);
 								m_ueDataParams.targetCellId = targetID2;
 								m_ueDataParams.sourceCellId = this->m_ueDataParams.sourceCellId;
 								m_ueDataParams.gtpTeid = this -> m_ueDataParams.gtpTeid;
-									m_epcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
+									m_ngcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
 								}
 				isTargetCellId_1 = false;
 				isTargetCellId_2 = true;
@@ -248,26 +248,26 @@ McEnbPdcp::DoDispose ()
   NS_LOG_FUNCTION (this);
   delete (m_pdcpSapProvider);
   delete (m_rlcSapUser);
-  delete (m_epcX2PdcpUser);
+  delete (m_ngcX2PdcpUser);
 }
 
 void
-McEnbPdcp::SetEpcX2PdcpProvider (EpcX2PdcpProvider * s)
+McEnbPdcp::SetNgcX2PdcpProvider (NgcX2PdcpProvider * s)
 {
   NS_LOG_FUNCTION(this);
-  m_epcX2PdcpProvider = s;
+  m_ngcX2PdcpProvider = s;
 }
 void
-McEnbPdcp::SetEpcX2PdcpUser(EpcX2PdcpUser *s ){ //sjkang
+McEnbPdcp::SetNgcX2PdcpUser(NgcX2PdcpUser *s ){ //sjkang
 	NS_LOG_FUNCTION(this);
-	m_epcX2PdcpUser =s; //sjkang
+	m_ngcX2PdcpUser =s; //sjkang
 }
   
-EpcX2PdcpUser* 
-McEnbPdcp::GetEpcX2PdcpUser ()
+NgcX2PdcpUser* 
+McEnbPdcp::GetNgcX2PdcpUser ()
 {
   NS_LOG_FUNCTION(this);
-  return m_epcX2PdcpUser;
+  return m_ngcX2PdcpUser;
 }
 
 void
@@ -339,7 +339,7 @@ McEnbPdcp::SetStatus (Status s)
 }
 
 void 
-McEnbPdcp::SetUeDataParams(EpcX2Sap::UeDataParams params)
+McEnbPdcp::SetUeDataParams(NgcX2Sap::UeDataParams params)
 {
   m_ueDataParams = params;
  // std::cout << params.sourceCellId << "\t" <<params.targetCellId << std::endl;
@@ -372,8 +372,8 @@ McEnbPdcp::DoTransmitPdcpSdu (Ptr<Packet> p)
   params.rnti = m_rnti;
   params.lcid = m_lcid;
 //m_useMmWaveConnection=true;
-  //std::cout << this <<"\t" <<m_epcX2PdcpProvider << "\t "  << m_useMmWaveConnection << std :: endl;
-  if(m_epcX2PdcpProvider == 0 || (!m_useMmWaveConnection))
+  //std::cout << this <<"\t" <<m_ngcX2PdcpProvider << "\t "  << m_useMmWaveConnection << std :: endl;
+  if(m_ngcX2PdcpProvider == 0 || (!m_useMmWaveConnection))
   {
     //NS_LOG_UNCOND(this << Simulator::Now().GetSeconds() << "\t" <<" McEnbPdcp: Tx packet to downlink local stack");
 
@@ -422,7 +422,7 @@ McEnbPdcp::DoTransmitPdcpSdu (Ptr<Packet> p)
     			    		pdcpHeader.SetSourceCellId(targetCellId_1); ///sjkang1116
     			    		p->AddHeader (pdcpHeader);
 
-    				  m_epcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
+    				  m_ngcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
     			  }
     		 // count ++;
 
@@ -431,7 +431,7 @@ McEnbPdcp::DoTransmitPdcpSdu (Ptr<Packet> p)
     		if (count >=100){
     			if (m_isEnableDuplicate){
     				//	std::cout << "----------------Duplicate Mode ---------------" <<std::endl;
-    				EpcX2Sap::UeDataParams m_ueDataParams_copy = m_ueDataParams;
+    				NgcX2Sap::UeDataParams m_ueDataParams_copy = m_ueDataParams;
     				  PdcpTag pdcpTag (Simulator::Now ());
     			    	 p->AddByteTag (pdcpTag);
     			    	 p->AddHeader (pdcpHeader);
@@ -444,8 +444,8 @@ McEnbPdcp::DoTransmitPdcpSdu (Ptr<Packet> p)
     			    	    		  m_rlcSapProvider->TransmitPdcpPdu (params);
     			    	  else{
 
-    			    	 m_epcX2PdcpProvider->SendMcPdcpPdu(m_ueDataParams);
-    			    	 m_epcX2PdcpProvider->SendMcPdcpPdu(m_ueDataParams_copy);
+    			    	 m_ngcX2PdcpProvider->SendMcPdcpPdu(m_ueDataParams);
+    			    	 m_ngcX2PdcpProvider->SendMcPdcpPdu(m_ueDataParams_copy);
     			    	  }
 
     			}else{
@@ -461,7 +461,7 @@ McEnbPdcp::DoTransmitPdcpSdu (Ptr<Packet> p)
     		    	    	if (Cellid == lteCellId)
     		    	    	   	m_rlcSapProvider->TransmitPdcpPdu (params);
     		    	    	 else{
-    		    	    	m_epcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
+    		    	    	m_ngcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
     		    	    	  }
     			}
     			}
@@ -480,7 +480,7 @@ McEnbPdcp::DoTransmitPdcpSdu (Ptr<Packet> p)
     		    }
 
     			count ++;
-    		    m_epcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
+    		    m_ngcX2PdcpProvider->SendMcPdcpPdu (m_ueDataParams);
     		  }
     		}
 
@@ -549,7 +549,7 @@ if (pdcpHeader.GetDcBit() ==LtePdcpHeader::CONTROL_PDU){
 }
 
 void
-McEnbPdcp::DoReceiveMcPdcpPdu (EpcX2Sap::UeDataParams params)
+McEnbPdcp::DoReceiveMcPdcpPdu (NgcX2Sap::UeDataParams params)
 {
   NS_LOG_FUNCTION(this << m_mmWaveRnti << (uint32_t) m_lcid);
   DoReceivePdu(params.ueData);
@@ -564,7 +564,7 @@ McEnbPdcp::SwitchConnection (bool useMmWaveConnection)
 bool
 McEnbPdcp::GetUseMmWaveConnection() const
 {
-  return m_useMmWaveConnection && (m_epcX2PdcpProvider != 0);
+  return m_useMmWaveConnection && (m_ngcX2PdcpProvider != 0);
 }
 
 
@@ -687,7 +687,7 @@ case 6:{
 return 1;
 }
 void
-McEnbPdcp::DoReceiveAssistantInformation(EpcX2Sap::AssistantInformationForSplitting info){
+McEnbPdcp::DoReceiveAssistantInformation(NgcX2Sap::AssistantInformationForSplitting info){
 
 //	q_Size[info.sourceCellId] = info.Re_TX_Q_Size+info.Tx_On_Q_Size+info.Txed_Q_Size;
 	q_Size[info.sourceCellId] = info.Tx_On_Q_Size+info.Txed_Q_Size;
@@ -700,7 +700,7 @@ McEnbPdcp::DoReceiveAssistantInformation(EpcX2Sap::AssistantInformationForSplitt
 
 }
 void
-McEnbPdcp::DoReceiveLteAssistantInfo(EpcX2Sap::AssistantInformationForSplitting info){
+McEnbPdcp::DoReceiveLteAssistantInfo(NgcX2Sap::AssistantInformationForSplitting info){
 	q_Size[lteCellId] = info.Tx_On_Q_Size+info.Txed_Q_Size;
 	//q_Size[lteCellId] = info.Re_TX_Q_Size+info.Tx_On_Q_Size+info.Txed_Q_Size;
 	//q_Delay[lteCellId] =(double) (info.Txed_Q_Delay+info.Tx_On_Q_Delay+info.Re_Tx_Q_Delay)/10e6;

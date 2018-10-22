@@ -93,7 +93,7 @@ def build(bld):
         'helper/ofswitch13-helper.cc',
         'helper/ofswitch13-internal-helper.cc',
         'helper/ofswitch13-stats-calculator.cc',
-		'helper/ovs-point-to-point-epc-helper.cc',
+		'helper/ovs-point-to-point-ngc-helper.cc',
 		'helper/qos-controller.cc'
         ]
     module.use.extend('OFSWITCH13'.split())
@@ -115,7 +115,7 @@ def build(bld):
         'helper/ofswitch13-helper.h',
         'helper/ofswitch13-internal-helper.h',
         'helper/ofswitch13-stats-calculator.h',
-		'helper/ovs-point-to-point-epc-helper.h',
+		'helper/ovs-point-to-point-ngc-helper.h',
 		'helper/qos-controller.h'
         ]
 

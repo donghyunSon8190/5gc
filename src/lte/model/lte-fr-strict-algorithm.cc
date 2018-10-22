@@ -562,7 +562,7 @@ LteFrStrictAlgorithm::DoReportUeMeas (uint16_t rnti,
 }
 
 void
-LteFrStrictAlgorithm::DoRecvLoadInformation (EpcX2Sap::LoadInformationParams params)
+LteFrStrictAlgorithm::DoRecvLoadInformation (NgcX2Sap::LoadInformationParams params)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_WARN ("Method should not be called, since it is empty");

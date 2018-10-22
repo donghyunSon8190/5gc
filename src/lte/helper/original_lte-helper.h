@@ -35,7 +35,7 @@
 #include <ns3/mac-stats-calculator.h>
 #include <ns3/radio-bearer-stats-calculator.h>
 #include <ns3/radio-bearer-stats-connector.h>
-#include <ns3/epc-tft.h>
+#include <ns3/ngc-tft.h>
 #include <ns3/mobility-model.h>
 
 namespace ns3 {
@@ -44,7 +44,7 @@ namespace ns3 {
 class LteUePhy;
 class LteEnbPhy;
 class SpectrumChannel;
-class EpcHelper1;
+class NgcHelper1;
 class PropagationLossModel;
 class SpectrumPropagationLossModel;
 
@@ -76,7 +76,7 @@ class SpectrumPropagationLossModel;
  *     * Handover algorithm
  *     * FFR (frequency reuse) algorithm
  *     * ANR (automatic neighbour relation)
- *   + EPC related models (EPC application, Internet stack, X2 interface)
+ *   + NGC related models (NGC application, Internet stack, X2 interface)
  * - UE node(s)
  *   + Mobility model
  *   + UE device(s)
@@ -85,13 +85,13 @@ class SpectrumPropagationLossModel;
  *     * UE MAC
  *     * UE RRC (includes RRC protocol)
  *     * NAS
- * - EPC helper
+ * - NGC helper
  * - Various statistics calculator objects
  *
  * Spetrum channels are created automatically: one for DL, and one for UL.
  * eNodeB devices are created by calling InstallEnbDevice(), while UE devices
- * are created by calling InstallUeDevice(). EPC helper can be set by using
- * SetEpcHelper().
+ * are created by calling InstallUeDevice(). NGC helper can be set by using
+ * SetNgcHelper().
  */
 class LteHelper1 : public Object
 {
@@ -107,19 +107,19 @@ public:
   virtual void DoDispose (void);
 
   /** 
-   * Set the EpcHelper1 to be used to setup the EPC network in
+   * Set the NgcHelper1 to be used to setup the NGC network in
    * conjunction with the setup of the LTE radio access network.
    *
-   * \note if no EpcHelper1 is ever set, then LteHelper1 will default
-   * to creating an LTE-only simulation with no EPC, using LteRlcSm as
+   * \note if no NgcHelper1 is ever set, then LteHelper1 will default
+   * to creating an LTE-only simulation with no NGC, using LteRlcSm as
    * the RLC model, and without supporting any IP networking. In other
    * words, it will be a radio-level simulation involving only LTE PHY
    * and MAC and the FF Scheduler, with a saturation traffic model for
    * the RLC.
    * 
-   * \param h a pointer to the EpcHelper1 to be used
+   * \param h a pointer to the NgcHelper1 to be used
    */
-  void SetEpcHelper (Ptr<EpcHelper1> h);
+  void SetNgcHelper (Ptr<NgcHelper1> h);
 
   /** 
    * Set the type of path loss model to be used for both DL and UL channels.
@@ -311,7 +311,7 @@ public:
    * UE will attempt to connect at the earliest possible time (e.g. after it
    * camps to a suitable cell).
    *
-   * Note that this function can only be used in EPC-enabled simulation.
+   * Note that this function can only be used in NGC-enabled simulation.
    */
   void Attach (NetDeviceContainer1 ueDevices);
 
@@ -330,7 +330,7 @@ public:
    * UE will attempt to connect at the earliest possible time (e.g. after it
    * camps to a suitable cell).
    *
-   * Note that this function can only be used in EPC-enabled simulation.
+   * Note that this function can only be used in NGC-enabled simulation.
    */
   void Attach (Ptr<NetDevice1> ueDevice);
 
@@ -343,7 +343,7 @@ public:
    * In addition, the function also instructs each UE to immediately enter
    * CONNECTED mode and activates the default EPS bearer.
    *
-   * The function can be used in both LTE-only and EPC-enabled simulations.
+   * The function can be used in both LTE-only and NGC-enabled simulations.
    * Note that this function will disable Idle mode initial cell selection
    * procedure.
    */
@@ -357,7 +357,7 @@ public:
    * In addition, the function also instructs the UE to immediately enter
    * CONNECTED mode and activates the default EPS bearer.
    *
-   * The function can be used in both LTE-only and EPC-enabled simulations.
+   * The function can be used in both LTE-only and NGC-enabled simulations.
    * Note that this function will disable Idle mode initial cell selection
    * procedure.
    */
@@ -402,7 +402,7 @@ public:
    * \param bearer the characteristics of the bearer to be activated
    * \param tft the Traffic Flow Template that identifies the traffic to go on this bearer
    */
-  uint8_t ActivateDedicatedEpsBearer (NetDeviceContainer1 ueDevices, EpsBearer bearer, Ptr<EpcTft> tft);
+  uint8_t ActivateDedicatedEpsBearer (NetDeviceContainer1 ueDevices, EpsBearer bearer, Ptr<NgcTft> tft);
 
   /**
    * Activate a dedicated EPS bearer on a given UE device.
@@ -411,7 +411,7 @@ public:
    * \param bearer the characteristics of the bearer to be activated
    * \param tft the Traffic Flow Template that identifies the traffic to go on this bearer.
    */
-  uint8_t ActivateDedicatedEpsBearer (Ptr<NetDevice1> ueDevice, EpsBearer bearer, Ptr<EpcTft> tft);
+  uint8_t ActivateDedicatedEpsBearer (Ptr<NetDevice1> ueDevice, EpsBearer bearer, Ptr<NgcTft> tft);
 
   /**
    *  \brief Manually trigger dedicated bearer de-activation at specific simulation time
@@ -419,7 +419,7 @@ public:
    *  \param enbDevice eNB, must be of the type LteEnbNetDevice
    *  \param bearerId Bearer Identity which is to be de-activated
    *
-   *  \warning Requires the use of EPC mode. See SetEpcHelper() method.
+   *  \warning Requires the use of NGC mode. See SetNgcHelper() method.
    */
 
   void DeActivateDedicatedEpsBearer (Ptr<NetDevice1> ueDevice, Ptr<NetDevice1> enbDevice, uint8_t bearerId);
@@ -449,7 +449,7 @@ public:
    *                     (the UE would be connected to this eNB after the
    *                     handover)
    *
-   * \warning Requires the use of EPC mode. See SetEpcHelper() method
+   * \warning Requires the use of NGC mode. See SetNgcHelper() method
    */
   void HandoverRequest (Time hoTime, Ptr<NetDevice1> ueDev,
                         Ptr<NetDevice1> sourceEnbDev, Ptr<NetDevice1> targetEnbDev);
@@ -698,9 +698,9 @@ private:
   /**
    * Helper which provides implementation of core network. Initially empty
    * (i.e., LTE-only simulation without any core network) and then might be
-   * set using SetEpcHelper().
+   * set using SetNgcHelper().
    */
-  Ptr<EpcHelper1> m_epcHelper;
+  Ptr<NgcHelper1> m_ngcHelper;
 
   /**
    * Keep track of the number of IMSI allocated. Increases by one every time a

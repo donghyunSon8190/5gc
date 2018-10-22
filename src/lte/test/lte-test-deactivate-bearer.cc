@@ -47,7 +47,7 @@
 #include <ns3/boolean.h>
 #include <ns3/enum.h>
 
-#include "ns3/point-to-point-epc-helper.h"
+#include "ns3/point-to-point-ngc-helper.h"
 #include "ns3/network-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/internet-module.h"
@@ -138,10 +138,10 @@ LenaDeactivateBearerTestCase::DoRun (void)
 
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
-  Ptr<PointToPointEpcHelper>  epcHelper = CreateObject<PointToPointEpcHelper> ();
-  lteHelper->SetEpcHelper (epcHelper);
+  Ptr<PointToPointNgcHelper>  ngcHelper = CreateObject<PointToPointNgcHelper> ();
+  lteHelper->SetNgcHelper (ngcHelper);
 
-  Ptr<Node> pgw = epcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
   // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -155,7 +155,7 @@ LenaDeactivateBearerTestCase::DoRun (void)
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.001)));
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -170,10 +170,10 @@ LenaDeactivateBearerTestCase::DoRun (void)
 
   // LogComponentEnable ("LenaTestDeactivateBearer", LOG_LEVEL_ALL);
   // LogComponentEnable ("LteHelper", logLevel);
-  // LogComponentEnable ("EpcHelper", logLevel);
-  // LogComponentEnable ("EpcEnbApplication", logLevel);
-  // LogComponentEnable ("EpcSgwPgwApplication", logLevel);
-  // LogComponentEnable ("EpcMme", logLevel);
+  // LogComponentEnable ("NgcHelper", logLevel);
+  // LogComponentEnable ("NgcEnbApplication", logLevel);
+  // LogComponentEnable ("NgcSmfUpfApplication", logLevel);
+  // LogComponentEnable ("NgcMme", logLevel);
   // LogComponentEnable ("LteEnbRrc", logLevel);
 
   lteHelper->SetAttribute ("PathlossModel", StringValue ("ns3::FriisSpectrumPropagationLossModel"));
@@ -217,7 +217,7 @@ LenaDeactivateBearerTestCase::DoRun (void)
   // Install the IP stack on the UEs
   internet.Install (ueNodes);
   Ipv4InterfaceContainer ueIpIface;
-  ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
+  ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (ueDevs));
 
   // Assign IP address to UEs
   for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
@@ -225,7 +225,7 @@ LenaDeactivateBearerTestCase::DoRun (void)
       Ptr<Node> ueNode = ueNodes.Get (u);
       // Set the default gateway for the UE
       Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-      ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+      ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
     }
 
   // Attach a UE to a eNB
@@ -247,7 +247,7 @@ LenaDeactivateBearerTestCase::DoRun (void)
       bearer.arp.priorityLevel = 15 - (u + 1);
       bearer.arp.preemptionCapability = true;
       bearer.arp.preemptionVulnerability = true;
-      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, EpcTft::Default ());
+      lteHelper->ActivateDedicatedEpsBearer (ueDevice, bearer, NgcTft::Default ());
     }
 
 

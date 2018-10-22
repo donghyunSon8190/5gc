@@ -26,8 +26,8 @@
 #include <ns3/abort.h>
 #include <ns3/pointer.h>
 #include <ns3/lte-enb-rrc.h>
-#include <ns3/epc-ue-nas.h>
-#include <ns3/epc-enb-application.h>
+#include <ns3/ngc-ue-nas.h>
+#include <ns3/ngc-enb-application.h>
 #include <ns3/lte-ue-rrc.h>
 #include <ns3/lte-ue-mac.h>
 #include <ns3/lte-enb-mac.h>
@@ -49,18 +49,18 @@
 #include <ns3/lte-rlc.h>
 #include <ns3/lte-rlc-um.h>
 #include <ns3/lte-rlc-am.h>
-#include <ns3/epc-enb-s1-sap.h>
+#include <ns3/ngc-enb-s1-sap.h>
 #include <ns3/lte-rrc-protocol-ideal.h>
 #include <ns3/lte-rrc-protocol-real.h>
 #include <ns3/mac-stats-calculator.h>
 #include <ns3/phy-stats-calculator.h>
 #include <ns3/phy-tx-stats-calculator.h>
 #include <ns3/phy-rx-stats-calculator.h>
-#include <ns3/epc-helper.h>
+#include <ns3/ngc-helper.h>
 #include <iostream>
 #include <ns3/buildings-propagation-loss-model.h>
 #include <ns3/lte-spectrum-value-helper.h>
-#include <ns3/epc-x2.h>
+#include <ns3/ngc-x2.h>
 
 namespace ns3 {
 
@@ -215,10 +215,10 @@ LteHelper::DoDispose ()
 
 
 void 
-LteHelper::SetEpcHelper (Ptr<EpcHelper> h)
+LteHelper::SetNgcHelper (Ptr<NgcHelper> h)
 {
   NS_LOG_FUNCTION (this << h);
-  m_epcHelper = h;
+  m_ngcHelper = h;
 }
 
 void 
@@ -474,11 +474,11 @@ LteHelper::InstallSingleEnbDevice (Ptr<Node> n)
       rrcProtocol->SetCellId (cellId);
     }
 
-  if (m_epcHelper != 0)
+  if (m_ngcHelper != 0)
     {
       EnumValue epsBearerToRlcMapping;
       rrc->GetAttribute ("EpsBearerToRlcMapping", epsBearerToRlcMapping);
-      // it does not make sense to use RLC/SM when also using the EPC
+      // it does not make sense to use RLC/SM when also using the NGC
       if (epsBearerToRlcMapping.Get () == LteEnbRrc::RLC_SM_ALWAYS)
         {
           rrc->SetAttribute ("EpsBearerToRlcMapping", EnumValue (LteEnbRrc::RLC_UM_ALWAYS));
@@ -560,21 +560,21 @@ LteHelper::InstallSingleEnbDevice (Ptr<Node> n)
 
   m_uplinkChannel->AddRx (ulPhy);
 
-  if (m_epcHelper != 0)
+  if (m_ngcHelper != 0)
     {
-      NS_LOG_INFO ("adding this eNB to the EPC");
-      m_epcHelper->AddEnb (n, dev, dev->GetCellId ());
-      Ptr<EpcEnbApplication> enbApp = n->GetApplication (0)->GetObject<EpcEnbApplication> ();
-      NS_ASSERT_MSG (enbApp != 0, "cannot retrieve EpcEnbApplication");
+      NS_LOG_INFO ("adding this eNB to the NGC");
+      m_ngcHelper->AddEnb (n, dev, dev->GetCellId ());
+      Ptr<NgcEnbApplication> enbApp = n->GetApplication (0)->GetObject<NgcEnbApplication> ();
+      NS_ASSERT_MSG (enbApp != 0, "cannot retrieve NgcEnbApplication");
 
       // S1 SAPs
       rrc->SetS1SapProvider (enbApp->GetS1SapProvider ());
       enbApp->SetS1SapUser (rrc->GetS1SapUser ());
 
       // X2 SAPs
-      Ptr<EpcX2> x2 = n->GetObject<EpcX2> ();
-      x2->SetEpcX2SapUser (rrc->GetEpcX2SapUser ());
-      rrc->SetEpcX2SapProvider (x2->GetEpcX2SapProvider ());
+      Ptr<NgcX2> x2 = n->GetObject<NgcX2> ();
+      x2->SetNgcX2SapUser (rrc->GetNgcX2SapUser ());
+      rrc->SetNgcX2SapProvider (x2->GetNgcX2SapProvider ());
     }
 
   return dev;
@@ -659,11 +659,11 @@ LteHelper::InstallSingleUeDevice (Ptr<Node> n)
       rrc->SetLteUeRrcSapUser (rrcProtocol->GetLteUeRrcSapUser ());
     }
 
-  if (m_epcHelper != 0)
+  if (m_ngcHelper != 0)
     {
       rrc->SetUseRlcSm (false);
     }
-  Ptr<EpcUeNas> nas = CreateObject<EpcUeNas> ();
+  Ptr<NgcUeNas> nas = CreateObject<NgcUeNas> ();
  
   nas->SetAsSapProvider (rrc->GetAsSapProvider ());
   rrc->SetAsSapUser (nas->GetAsSapUser ());
@@ -687,7 +687,7 @@ LteHelper::InstallSingleUeDevice (Ptr<Node> n)
   dev->SetAttribute ("LteUePhy", PointerValue (phy));
   dev->SetAttribute ("LteUeMac", PointerValue (mac));
   dev->SetAttribute ("LteUeRrc", PointerValue (rrc));
-  dev->SetAttribute ("EpcUeNas", PointerValue (nas));
+  dev->SetAttribute ("NgcUeNas", PointerValue (nas));
 
   phy->SetDevice (dev);
   dlPhy->SetDevice (dev);
@@ -701,9 +701,9 @@ LteHelper::InstallSingleUeDevice (Ptr<Node> n)
   dlPhy->SetLtePhyDlHarqFeedbackCallback (MakeCallback (&LteUePhy::ReceiveLteDlHarqFeedback, phy));
   nas->SetForwardUpCallback (MakeCallback (&LteUeNetDevice::Receive, dev));
 
-  if (m_epcHelper != 0)
+  if (m_ngcHelper != 0)
     {
-      m_epcHelper->AddUe (dev, dev->GetImsi ());
+      m_ngcHelper->AddUe (dev, dev->GetImsi ());
     }
 
   dev->Initialize ();
@@ -727,9 +727,9 @@ LteHelper::Attach (Ptr<NetDevice> ueDevice)
 {
   NS_LOG_FUNCTION (this);
 
-  if (m_epcHelper == 0)
+  if (m_ngcHelper == 0)
     {
-      NS_FATAL_ERROR ("This function is not valid without properly configured EPC");
+      NS_FATAL_ERROR ("This function is not valid without properly configured NGC");
     }
 
   Ptr<LteUeNetDevice> ueLteDevice = ueDevice->GetObject<LteUeNetDevice> ();
@@ -739,7 +739,7 @@ LteHelper::Attach (Ptr<NetDevice> ueDevice)
     }
 
   // initiate cell selection
-  Ptr<EpcUeNas> ueNas = ueLteDevice->GetNas ();
+  Ptr<NgcUeNas> ueNas = ueLteDevice->GetNas ();
   NS_ASSERT (ueNas != 0);
   uint16_t dlEarfcn = ueLteDevice->GetDlEarfcn ();
   ueNas->StartCellSelection (dlEarfcn);
@@ -748,8 +748,8 @@ LteHelper::Attach (Ptr<NetDevice> ueDevice)
   ueNas->Connect ();
 
   // activate default EPS bearer
-  m_epcHelper->ActivateEpsBearer (ueDevice, ueLteDevice->GetImsi (),
-                                  EpcTft::Default (),
+  m_ngcHelper->ActivateEpsBearer (ueDevice, ueLteDevice->GetImsi (),
+                                  NgcTft::Default (),
                                   EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
 }
 
@@ -772,17 +772,17 @@ LteHelper::Attach (Ptr<NetDevice> ueDevice, Ptr<NetDevice> enbDevice)
   Ptr<LteUeNetDevice> ueLteDevice = ueDevice->GetObject<LteUeNetDevice> ();
   Ptr<LteEnbNetDevice> enbLteDevice = enbDevice->GetObject<LteEnbNetDevice> ();
 
-  Ptr<EpcUeNas> ueNas = ueLteDevice->GetNas ();
+  Ptr<NgcUeNas> ueNas = ueLteDevice->GetNas ();
   ueNas->Connect (enbLteDevice->GetCellId (), enbLteDevice->GetDlEarfcn ());
 
-  if (m_epcHelper != 0)
+  if (m_ngcHelper != 0)
     {
       // activate default EPS bearer
-      m_epcHelper->ActivateEpsBearer (ueDevice, ueLteDevice->GetImsi (), EpcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
+      m_ngcHelper->ActivateEpsBearer (ueDevice, ueLteDevice->GetImsi (), NgcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
     }
 
   // tricks needed for the simplified LTE-only simulations 
-  if (m_epcHelper == 0)
+  if (m_ngcHelper == 0)
     {
       ueDevice->GetObject<LteUeNetDevice> ()->SetTargetEnb (enbDevice->GetObject<LteEnbNetDevice> ());
     }
@@ -821,7 +821,7 @@ LteHelper::AttachToClosestEnb (Ptr<NetDevice> ueDevice, NetDeviceContainer enbDe
 }
 
 uint8_t
-LteHelper::ActivateDedicatedEpsBearer (NetDeviceContainer ueDevices, EpsBearer bearer, Ptr<EpcTft> tft)
+LteHelper::ActivateDedicatedEpsBearer (NetDeviceContainer ueDevices, EpsBearer bearer, Ptr<NgcTft> tft)
 {
   NS_LOG_FUNCTION (this);
   for (NetDeviceContainer::Iterator i = ueDevices.Begin (); i != ueDevices.End (); ++i)
@@ -834,14 +834,14 @@ LteHelper::ActivateDedicatedEpsBearer (NetDeviceContainer ueDevices, EpsBearer b
 
 
 uint8_t
-LteHelper::ActivateDedicatedEpsBearer (Ptr<NetDevice> ueDevice, EpsBearer bearer, Ptr<EpcTft> tft)
+LteHelper::ActivateDedicatedEpsBearer (Ptr<NetDevice> ueDevice, EpsBearer bearer, Ptr<NgcTft> tft)
 {
   NS_LOG_FUNCTION (this);
 
-  NS_ASSERT_MSG (m_epcHelper != 0, "dedicated EPS bearers cannot be set up when the EPC is not used");
+  NS_ASSERT_MSG (m_ngcHelper != 0, "dedicated EPS bearers cannot be set up when the NGC is not used");
 
   uint64_t imsi = ueDevice->GetObject<LteUeNetDevice> ()->GetImsi ();
-  uint8_t bearerId = m_epcHelper->ActivateEpsBearer (ueDevice, imsi, tft, bearer);
+  uint8_t bearerId = m_ngcHelper->ActivateEpsBearer (ueDevice, imsi, tft, bearer);
   return bearerId;
 }
 
@@ -849,7 +849,7 @@ LteHelper::ActivateDedicatedEpsBearer (Ptr<NetDevice> ueDevice, EpsBearer bearer
  * \ingroup lte
  *
  * DrbActivatior allows user to activate bearers for UEs
- * when EPC is not used. Activation function is hooked to
+ * when NGC is not used. Activation function is hooked to
  * the Enb RRC Connection Estabilished trace source. When
  * UE change its RRC state to CONNECTED_NORMALLY, activation
  * function is called and bearer is activated.
@@ -939,7 +939,7 @@ DrbActivator::ActivateDrb (uint64_t imsi, uint16_t cellId, uint16_t rnti)
       Ptr<UeManager> ueManager = enbRrc->GetUeManager (rnti);
       NS_ASSERT (ueManager->GetState () == UeManager::CONNECTED_NORMALLY
                  || ueManager->GetState () == UeManager::CONNECTION_RECONFIGURATION);
-      EpcEnbS1SapUser::DataRadioBearerSetupRequestParameters params;
+      NgcEnbS1SapUser::DataRadioBearerSetupRequestParameters params;
       params.rnti = rnti;
       params.bearer = m_bearer;
       params.bearerId = 0;
@@ -954,10 +954,10 @@ void
 LteHelper::ActivateDataRadioBearer (Ptr<NetDevice> ueDevice, EpsBearer bearer)
 {
   NS_LOG_FUNCTION (this << ueDevice);
-  NS_ASSERT_MSG (m_epcHelper == 0, "this method must not be used when the EPC is being used");
+  NS_ASSERT_MSG (m_ngcHelper == 0, "this method must not be used when the NGC is being used");
 
-  // Normally it is the EPC that takes care of activating DRBs
-  // when the UE gets connected. When the EPC is not used, we achieve
+  // Normally it is the NGC that takes care of activating DRBs
+  // when the UE gets connected. When the NGC is not used, we achieve
   // the same behavior by hooking a dedicated DRB activation function
   // to the Enb RRC Connection Established trace source
 
@@ -977,7 +977,7 @@ LteHelper::AddX2Interface (NodeContainer enbNodes)
 {
   NS_LOG_FUNCTION (this);
 
-  NS_ASSERT_MSG (m_epcHelper != 0, "X2 interfaces cannot be set up when the EPC is not used");
+  NS_ASSERT_MSG (m_ngcHelper != 0, "X2 interfaces cannot be set up when the NGC is not used");
 
   for (NodeContainer::Iterator i = enbNodes.Begin (); i != enbNodes.End (); ++i)
     {
@@ -994,14 +994,14 @@ LteHelper::AddX2Interface (Ptr<Node> enbNode1, Ptr<Node> enbNode2)
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("setting up the X2 interface");
 
-  m_epcHelper->AddX2Interface (enbNode1, enbNode2);
+  m_ngcHelper->AddX2Interface (enbNode1, enbNode2);
 }
 
 void
 LteHelper::HandoverRequest (Time hoTime, Ptr<NetDevice> ueDev, Ptr<NetDevice> sourceEnbDev, Ptr<NetDevice> targetEnbDev)
 {
   NS_LOG_FUNCTION (this << ueDev << sourceEnbDev << targetEnbDev);
-  NS_ASSERT_MSG (m_epcHelper, "Handover requires the use of the EPC - did you forget to call LteHelper::SetEpcHelper () ?");
+  NS_ASSERT_MSG (m_ngcHelper, "Handover requires the use of the NGC - did you forget to call LteHelper::SetNgcHelper () ?");
   Simulator::Schedule (hoTime, &LteHelper::DoHandoverRequest, this, ueDev, sourceEnbDev, targetEnbDev);
 }
 
@@ -1020,7 +1020,7 @@ void
 LteHelper::DeActivateDedicatedEpsBearer (Ptr<NetDevice> ueDevice,Ptr<NetDevice> enbDevice, uint8_t bearerId)
 {
   NS_LOG_FUNCTION (this << ueDevice << bearerId);
-  NS_ASSERT_MSG (m_epcHelper != 0, "Dedicated EPS bearers cannot be de-activated when the EPC is not used");
+  NS_ASSERT_MSG (m_ngcHelper != 0, "Dedicated EPS bearers cannot be de-activated when the NGC is not used");
   NS_ASSERT_MSG (bearerId != 1, "Default bearer cannot be de-activated until and unless and UE is released");
 
   DoDeActivateDedicatedEpsBearer (ueDevice, enbDevice, bearerId);

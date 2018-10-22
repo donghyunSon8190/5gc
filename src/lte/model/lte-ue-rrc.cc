@@ -1198,7 +1198,7 @@ if ((unsigned)(msg.HandoverCase)==0)//sjkang  // mmWave Stack of UE
           {
             // this is the secondary mmWave RRC. When a secondary HO happens,
             // the primary LTE RRC must be notified in order to update the RLC instances
-            // Forward this message to EpcUeNas and then to LteUeRrc for LTE RRC
+            // Forward this message to NgcUeNas and then to LteUeRrc for LTE RRC
         	  std::cout << "Notify Secondary cell Handover started " <<std::endl;
             m_asSapUser->NotifySecondaryCellHandoverStarted(oldRnti, m_rnti, m_cellId, msg.radioResourceConfigDedicated); // to EPS UE NAS
             msg.radioResourceConfigDedicated.drbToAddModList.clear(); // remove the drb list, since no Data RLC must be setup in this RRC

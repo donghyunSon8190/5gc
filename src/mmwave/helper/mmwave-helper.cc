@@ -45,8 +45,8 @@
 #include <ns3/double.h>
 #include <ns3/ipv4.h>
 #include <ns3/mmwave-lte-rrc-protocol-real.h>
-#include <ns3/epc-enb-application.h>
-#include <ns3/epc-x2.h>
+#include <ns3/ngc-enb-application.h>
+#include <ns3/ngc-x2.h>
 
 #include <ns3/friis-spectrum-propagation-loss.h>
 #include <ns3/mmwave-rrc-protocol-ideal.h>
@@ -838,7 +838,7 @@ MmWaveHelper::InstallSingleMcUeDevice(Ptr<Node> n)
 		rrcProtocol_2->SetLteUeRrcSapProvider (mmWaveRrc_2->GetLteUeRrcSapProvider ());
 		mmWaveRrc_2->SetLteUeRrcSapUser (rrcProtocol_2->GetLteUeRrcSapUser ());
 	}
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 		mmWaveRrc->SetUseRlcSm (false);
 		mmWaveRrc_2->SetUseRlcSm (false);
@@ -927,12 +927,12 @@ MmWaveHelper::InstallSingleMcUeDevice(Ptr<Node> n)
 		lteRrc->SetLteUeRrcSapUser (rrcProtocol->GetLteUeRrcSapUser ());
 	}
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 		lteRrc->SetUseRlcSm (false);
 	}
 
-	Ptr<EpcUeNas> lteNas = CreateObject<EpcUeNas> ();
+	Ptr<NgcUeNas> lteNas = CreateObject<NgcUeNas> ();
 
 	lteNas->SetAsSapProvider (lteRrc->GetAsSapProvider ()); //sjkang
 	lteNas->SetMmWaveAsSapProvider_2 (mmWaveRrc_2->GetAsSapProvider()); //sjkang
@@ -968,7 +968,7 @@ MmWaveHelper::InstallSingleMcUeDevice(Ptr<Node> n)
 	device->SetAttribute ("LteUePhy", PointerValue (ltePhy));
 	device->SetAttribute ("LteUeMac", PointerValue (lteMac));
 	device->SetAttribute ("LteUeRrc", PointerValue (lteRrc));
-	device->SetAttribute ("EpcUeNas", PointerValue (lteNas));
+	device->SetAttribute ("NgcUeNas", PointerValue (lteNas));
 	device->SetAttribute ("Imsi", UintegerValue(imsi));
 
 	ltePhy->SetDevice (device);
@@ -982,9 +982,9 @@ MmWaveHelper::InstallSingleMcUeDevice(Ptr<Node> n)
 	lteDlPhy->SetLtePhyDlHarqFeedbackCallback (MakeCallback (&LteUePhy::ReceiveLteDlHarqFeedback, ltePhy));
 	lteNas->SetForwardUpCallback (MakeCallback (&McUeNetDevice::Receive, device));
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
-		m_epcHelper->AddUe (device, device->GetImsi ());
+		m_ngcHelper->AddUe (device, device->GetImsi ());
 	}
 
 	n->AddDevice(device);
@@ -1157,12 +1157,12 @@ MmWaveHelper::InstallSingleInterRatHoCapableUeDevice(Ptr<Node> n)
 		rrc->SetLteUeRrcSapUser (rrcProtocol->GetLteUeRrcSapUser ());
 	}
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 		rrc->SetUseRlcSm (false);
 	}
 
-	Ptr<EpcUeNas> lteNas = CreateObject<EpcUeNas> ();
+	Ptr<NgcUeNas> lteNas = CreateObject<NgcUeNas> ();
 
 	lteNas->SetAsSapProvider (rrc->GetAsSapProvider ());
 	rrc->SetAsSapUser (lteNas->GetAsSapUser ());
@@ -1191,7 +1191,7 @@ MmWaveHelper::InstallSingleInterRatHoCapableUeDevice(Ptr<Node> n)
 	device->SetAttribute ("LteUePhy", PointerValue (ltePhy));
 	device->SetAttribute ("LteUeMac", PointerValue (lteMac));
 	device->SetAttribute ("LteUeRrc", PointerValue (rrc));
-	device->SetAttribute ("EpcUeNas", PointerValue (lteNas));
+	device->SetAttribute ("NgcUeNas", PointerValue (lteNas));
 	device->SetAttribute ("Imsi", UintegerValue(imsi));
 
 	ltePhy->SetDevice (device);
@@ -1205,9 +1205,9 @@ MmWaveHelper::InstallSingleInterRatHoCapableUeDevice(Ptr<Node> n)
 	lteDlPhy->SetLtePhyDlHarqFeedbackCallback (MakeCallback (&LteUePhy::ReceiveLteDlHarqFeedback, ltePhy));
 	lteNas->SetForwardUpCallback (MakeCallback (&McUeNetDevice::Receive, device));
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
-		m_epcHelper->AddUe (device, device->GetImsi ());
+		m_ngcHelper->AddUe (device, device->GetImsi ());
 	}
 
 	n->AddDevice(device);
@@ -1302,7 +1302,7 @@ MmWaveHelper::InstallSingleUeDevice (Ptr<Node> n)
 		rrcProtocol->SetLteUeRrcSapProvider (rrc->GetLteUeRrcSapProvider ());
 		rrc->SetLteUeRrcSapUser (rrcProtocol->GetLteUeRrcSapUser ());
 	}
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 		rrc->SetUseRlcSm (false);
 	}
@@ -1310,7 +1310,7 @@ MmWaveHelper::InstallSingleUeDevice (Ptr<Node> n)
 	{
 		rrc->SetUseRlcSm (true);
 	}
-	Ptr<EpcUeNas> nas = CreateObject<EpcUeNas> ();
+	Ptr<NgcUeNas> nas = CreateObject<NgcUeNas> ();
 	nas->SetAsSapProvider (rrc->GetAsSapProvider ());
 	rrc->SetAsSapUser (nas->GetAsSapUser ());
 
@@ -1334,7 +1334,7 @@ MmWaveHelper::InstallSingleUeDevice (Ptr<Node> n)
 	device->SetAttribute ("Imsi", UintegerValue(imsi));
 	device->SetAttribute ("MmWaveUePhy", PointerValue(phy));
 	device->SetAttribute ("MmWaveUeMac", PointerValue(mac));
-	device->SetAttribute ("EpcUeNas", PointerValue (nas));
+	device->SetAttribute ("NgcUeNas", PointerValue (nas));
 	device->SetAttribute ("mmWaveUeRrc", PointerValue (rrc));
 
 	phy->SetDevice (device);
@@ -1349,9 +1349,9 @@ MmWaveHelper::InstallSingleUeDevice (Ptr<Node> n)
 	dlPhy->SetPhyRxDataEndOkCallback (MakeCallback (&MmWaveUePhy::PhyDataPacketReceived, phy));
 	dlPhy->SetPhyRxCtrlEndOkCallback (MakeCallback (&MmWaveUePhy::ReceiveControlMessageList, phy));
 	nas->SetForwardUpCallback (MakeCallback (&MmWaveUeNetDevice::Receive, device));
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
-		m_epcHelper->AddUe (device, device->GetImsi ());
+		m_ngcHelper->AddUe (device, device->GetImsi ());
 	}
 
 	device->Initialize();
@@ -1475,11 +1475,11 @@ MmWaveHelper::InstallSingleEnbDevice (Ptr<Node> n)
 		rrcProtocol->SetCellId (cellId);
 	}
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 		EnumValue epsBearerToRlcMapping;
 		rrc->GetAttribute ("EpsBearerToRlcMapping", epsBearerToRlcMapping);
-		// it does not make sense to use RLC/SM when also using the EPC
+		// it does not make sense to use RLC/SM when also using the NGC
 		if (epsBearerToRlcMapping.Get () == LteEnbRrc::RLC_SM_ALWAYS)
 		{
 			if (m_rlcAmEnabled)
@@ -1553,24 +1553,24 @@ MmWaveHelper::InstallSingleEnbDevice (Ptr<Node> n)
 	m_channel->AddRx (dlPhy);
 
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
-		NS_LOG_INFO ("adding this eNB to the EPC");
-		m_epcHelper->AddEnb (n, device, device->GetCellId ());
-		Ptr<EpcEnbApplication> enbApp = n->GetApplication (0)->GetObject<EpcEnbApplication> ();
-		NS_ASSERT_MSG (enbApp != 0, "cannot retrieve EpcEnbApplication");
+		NS_LOG_INFO ("adding this eNB to the NGC");
+		m_ngcHelper->AddEnb (n, device, device->GetCellId ());
+		Ptr<NgcEnbApplication> enbApp = n->GetApplication (0)->GetObject<NgcEnbApplication> ();
+		NS_ASSERT_MSG (enbApp != 0, "cannot retrieve NgcEnbApplication");
 
 		// S1 SAPs
 		rrc->SetS1SapProvider (enbApp->GetS1SapProvider ());
 		enbApp->SetS1SapUser (rrc->GetS1SapUser ());
 
 		// X2 SAPs
-		Ptr<EpcX2> x2 = n->GetObject<EpcX2> ();
-		//std::cout << x2->GetEpcX2RlcProvider() << "sjkang1114" <<std::endl;
-		x2->SetEpcX2SapUser (rrc->GetEpcX2SapUser ());
-		rrc->SetEpcX2SapProvider (x2->GetEpcX2SapProvider ());
-	 	rrc->SetEpcX2RlcProvider (x2->GetEpcX2RlcProvider ());
-	 //	 rrc->SetEpcX2PdcpProvider (x2->GetEpcX2PdcpProvider ());//sjkang1114
+		Ptr<NgcX2> x2 = n->GetObject<NgcX2> ();
+		//std::cout << x2->GetNgcX2RlcProvider() << "sjkang1114" <<std::endl;
+		x2->SetNgcX2SapUser (rrc->GetNgcX2SapUser ());
+		rrc->SetNgcX2SapProvider (x2->GetNgcX2SapProvider ());
+	 	rrc->SetNgcX2RlcProvider (x2->GetNgcX2RlcProvider ());
+	 //	 rrc->SetNgcX2PdcpProvider (x2->GetNgcX2PdcpProvider ());//sjkang1114
 	 	std::cout << "mmWave eNB frequency : " << freq <<" CellId : "<< cellId << std::endl;
 
 	}
@@ -1700,11 +1700,11 @@ MmWaveHelper::InstallSingleEnbDevice_2 (Ptr<Node> n)
 		rrcProtocol->SetCellId (cellId);
 	}
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 		EnumValue epsBearerToRlcMapping;
 		rrc->GetAttribute ("EpsBearerToRlcMapping", epsBearerToRlcMapping);
-		// it does not make sense to use RLC/SM when also using the EPC
+		// it does not make sense to use RLC/SM when also using the NGC
 		if (epsBearerToRlcMapping.Get () == LteEnbRrc::RLC_SM_ALWAYS)
 		{
 			if (m_rlcAmEnabled)
@@ -1773,24 +1773,24 @@ MmWaveHelper::InstallSingleEnbDevice_2 (Ptr<Node> n)
 	m_channel_2->AddRx (dlPhy);
 
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
-		NS_LOG_INFO ("adding this eNB to the EPC");
-		m_epcHelper->AddEnb (n, device, device->GetCellId ());
-		Ptr<EpcEnbApplication> enbApp = n->GetApplication (0)->GetObject<EpcEnbApplication> ();
-		NS_ASSERT_MSG (enbApp != 0, "cannot retrieve EpcEnbApplication");
+		NS_LOG_INFO ("adding this eNB to the NGC");
+		m_ngcHelper->AddEnb (n, device, device->GetCellId ());
+		Ptr<NgcEnbApplication> enbApp = n->GetApplication (0)->GetObject<NgcEnbApplication> ();
+		NS_ASSERT_MSG (enbApp != 0, "cannot retrieve NgcEnbApplication");
 
 		// S1 SAPs
 		rrc->SetS1SapProvider (enbApp->GetS1SapProvider ());
 		enbApp->SetS1SapUser (rrc->GetS1SapUser ());
 
 		// X2 SAPs
-		Ptr<EpcX2> x2 = n->GetObject<EpcX2> ();
-		x2->SetEpcX2SapUser (rrc->GetEpcX2SapUser ());
+		Ptr<NgcX2> x2 = n->GetObject<NgcX2> ();
+		x2->SetNgcX2SapUser (rrc->GetNgcX2SapUser ());
         x2->isAdditionalMmWave =true;//sjkang1016
-		rrc->SetEpcX2SapProvider (x2->GetEpcX2SapProvider ());
-	 	rrc->SetEpcX2RlcProvider (x2->GetEpcX2RlcProvider ());
-	 //	 rrc->SetEpcX2PdcpProvider (x2->GetEpcX2PdcpProvider ()); //sjkang1114
+		rrc->SetNgcX2SapProvider (x2->GetNgcX2SapProvider ());
+	 	rrc->SetNgcX2RlcProvider (x2->GetNgcX2RlcProvider ());
+	 //	 rrc->SetNgcX2PdcpProvider (x2->GetNgcX2PdcpProvider ()); //sjkang1114
 	}
 	std::cout << "mmWave eNB frequency : " << freq <<" CellId : "<< cellId << std::endl;
 	return device;
@@ -1863,11 +1863,11 @@ MmWaveHelper::InstallSingleLteEnbDevice (Ptr<Node> n)
 	  rrcProtocol->SetCellId (cellId);
 	}
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 	  EnumValue epsBearerToRlcMapping;
 	  rrc->GetAttribute ("EpsBearerToRlcMapping", epsBearerToRlcMapping);
-	  // it does not make sense to use RLC/SM when also using the EPC
+	  // it does not make sense to use RLC/SM when also using the NGC
 
 // ***************** RDF EDIT 6/9/2016 ***************** //
 //	  if (epsBearerToRlcMapping.Get () == LteEnbRrc::RLC_SM_ALWAYS)
@@ -1960,22 +1960,22 @@ MmWaveHelper::InstallSingleLteEnbDevice (Ptr<Node> n)
 
 	m_uplinkChannel->AddRx (ulPhy);
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
-	  NS_LOG_INFO ("adding this eNB to the EPC");
-	  m_epcHelper->AddEnb (n, dev, dev->GetCellId ());
-	  Ptr<EpcEnbApplication> enbApp = n->GetApplication (0)->GetObject<EpcEnbApplication> ();
-	  NS_ASSERT_MSG (enbApp != 0, "cannot retrieve EpcEnbApplication");
+	  NS_LOG_INFO ("adding this eNB to the NGC");
+	  m_ngcHelper->AddEnb (n, dev, dev->GetCellId ());
+	  Ptr<NgcEnbApplication> enbApp = n->GetApplication (0)->GetObject<NgcEnbApplication> ();
+	  NS_ASSERT_MSG (enbApp != 0, "cannot retrieve NgcEnbApplication");
 
 	  // S1 SAPs
 	  rrc->SetS1SapProvider (enbApp->GetS1SapProvider ());
 	  enbApp->SetS1SapUser (rrc->GetS1SapUser ());
 
 	  // X2 SAPs
-	  Ptr<EpcX2> x2 = n->GetObject<EpcX2> ();
-	  x2->SetEpcX2SapUser (rrc->GetEpcX2SapUser ());
-	  rrc->SetEpcX2SapProvider (x2->GetEpcX2SapProvider ());
-	  rrc->SetEpcX2PdcpProvider (x2->GetEpcX2PdcpProvider ());
+	  Ptr<NgcX2> x2 = n->GetObject<NgcX2> ();
+	  x2->SetNgcX2SapUser (rrc->GetNgcX2SapUser ());
+	  rrc->SetNgcX2SapProvider (x2->GetNgcX2SapProvider ());
+	  rrc->SetNgcX2PdcpProvider (x2->GetNgcX2PdcpProvider ());
 	  rrc->SetX2(x2); //sjkang1114 for storing x2 address which is attached at Lte Enb
 	}
 
@@ -2126,18 +2126,18 @@ MmWaveHelper::AttachToClosestEnb (Ptr<NetDevice> ueDevice, NetDeviceContainer en
 	closestEnbDevice->GetObject<MmWaveEnbNetDevice> ()->GetMac ()->AssociateUeMAC (ueDevice->GetObject<MmWaveUeNetDevice> ()->GetImsi ());
 
 	// connect to the closest one
-	Ptr<EpcUeNas> ueNas = ueDevice->GetObject<MmWaveUeNetDevice> ()->GetNas ();
+	Ptr<NgcUeNas> ueNas = ueDevice->GetObject<MmWaveUeNetDevice> ()->GetNas ();
 	ueNas->Connect (closestEnbDevice->GetObject<MmWaveEnbNetDevice> ()->GetCellId (),
 					closestEnbDevice->GetObject<MmWaveEnbNetDevice> ()->GetEarfcn ());
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 		// activate default EPS bearer
-		m_epcHelper->ActivateEpsBearer (ueDevice, ueDevice->GetObject<MmWaveUeNetDevice> ()->GetImsi (), EpcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
+		m_ngcHelper->ActivateEpsBearer (ueDevice, ueDevice->GetObject<MmWaveUeNetDevice> ()->GetImsi (), NgcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
 	}
 
 	// tricks needed for the simplified LTE-only simulations
-	//if (m_epcHelper == 0)
+	//if (m_ngcHelper == 0)
 	//{
 	ueDevice->GetObject<MmWaveUeNetDevice> ()->SetTargetEnb (closestEnbDevice->GetObject<MmWaveEnbNetDevice> ());
 	//}
@@ -2195,13 +2195,13 @@ MmWaveHelper::AttachMcToClosestEnb (Ptr<NetDevice> ueDevice, NetDeviceContainer 
 	
 	// Attach the MC device the LTE eNB, the best MmWave eNB will be selected automatically
 	Ptr<LteEnbNetDevice> enbLteDevice = lteClosestEnbDevice->GetObject<LteEnbNetDevice> ();
-	Ptr<EpcUeNas> lteUeNas = mcDevice->GetNas ();
+	Ptr<NgcUeNas> lteUeNas = mcDevice->GetNas ();
 	lteUeNas->Connect (enbLteDevice->GetCellId (), enbLteDevice->GetDlEarfcn ()); // the MmWaveCell will be automatically selected
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 	  // activate default EPS bearer
-	  m_epcHelper->ActivateEpsBearer (ueDevice, lteUeNas, mcDevice->GetImsi (), EpcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
+	  m_ngcHelper->ActivateEpsBearer (ueDevice, lteUeNas, mcDevice->GetImsi (), NgcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
 	}
 
   	mcDevice->SetLteTargetEnb (enbLteDevice);	
@@ -2255,13 +2255,13 @@ MmWaveHelper::AttachMcToClosestEnb_2 (Ptr<NetDevice> ueDevice, NetDeviceContaine
 
 	// Attach the MC device the LTE eNB, the best MmWave eNB will be selected automatically
 	Ptr<LteEnbNetDevice> enbLteDevice = lteClosestEnbDevice->GetObject<LteEnbNetDevice> ();
-	Ptr<EpcUeNas> lteUeNas = mcDevice->GetNas ();
+	Ptr<NgcUeNas> lteUeNas = mcDevice->GetNas ();
 	lteUeNas->Connect (enbLteDevice->GetCellId (), enbLteDevice->GetDlEarfcn ()); // the MmWaveCell will be automatically selected
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 	  // activate default EPS bearer
-	  m_epcHelper->ActivateEpsBearer (ueDevice, lteUeNas, mcDevice->GetImsi (), EpcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
+	  m_ngcHelper->ActivateEpsBearer (ueDevice, lteUeNas, mcDevice->GetImsi (), NgcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
 	}
 
   	mcDevice->SetLteTargetEnb (enbLteDevice);
@@ -2330,13 +2330,13 @@ MmWaveHelper::AttachIrToClosestEnb (Ptr<NetDevice> ueDevice, NetDeviceContainer 
 	
 	// Attach the MC device the Closest LTE eNB
 	Ptr<LteEnbNetDevice> enbLteDevice = lteClosestEnbDevice->GetObject<LteEnbNetDevice> ();
-	Ptr<EpcUeNas> lteUeNas = mcDevice->GetNas ();
+	Ptr<NgcUeNas> lteUeNas = mcDevice->GetNas ();
 	lteUeNas->Connect (enbLteDevice->GetCellId (), enbLteDevice->GetDlEarfcn ()); // force connection to the LTE eNB
 
-	if (m_epcHelper != 0)
+	if (m_ngcHelper != 0)
 	{
 	  // activate default EPS bearer
-	  m_epcHelper->ActivateEpsBearer (ueDevice, lteUeNas, mcDevice->GetImsi (), EpcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
+	  m_ngcHelper->ActivateEpsBearer (ueDevice, lteUeNas, mcDevice->GetImsi (), NgcTft::Default (), EpsBearer (EpsBearer::NGBR_VIDEO_TCP_DEFAULT));
 	}
 
 	// set initial targets
@@ -2351,7 +2351,7 @@ MmWaveHelper::AddX2Interface (NodeContainer enbNodes)
 {
   NS_LOG_FUNCTION (this);
 
-  NS_ASSERT_MSG (m_epcHelper != 0, "X2 interfaces cannot be set up when the EPC is not used");
+  NS_ASSERT_MSG (m_ngcHelper != 0, "X2 interfaces cannot be set up when the NGC is not used");
 
   for (NodeContainer::Iterator i = enbNodes.Begin (); i != enbNodes.End (); ++i)
     {
@@ -2365,7 +2365,7 @@ MmWaveHelper::AddX2Interface (NodeContainer enbNodes)
  	m_cnStats = CreateObject<CoreNetworkStatsCalculator> ();
 
 	// add traces
-  	Config::Connect ("/NodeList/*/$ns3::EpcX2/RxPDU",
+  	Config::Connect ("/NodeList/*/$ns3::NgcX2/RxPDU",
     	MakeCallback (&CoreNetworkStatsCalculator::LogX2Packet, m_cnStats));
 }
 
@@ -2375,7 +2375,7 @@ MmWaveHelper::AddX2Interface (Ptr<Node> enbNode1, Ptr<Node> enbNode2)
   NS_LOG_FUNCTION (this);
   NS_LOG_INFO ("setting up the X2 interface");
 
-  m_epcHelper->AddX2Interface (enbNode1, enbNode2);
+  m_ngcHelper->AddX2Interface (enbNode1, enbNode2);
 }
 
 void
@@ -2383,7 +2383,7 @@ MmWaveHelper::AddX2Interface (NodeContainer lteEnbNodes, NodeContainer mmWaveEnb
 {
 	NS_LOG_FUNCTION(this);
 
-	NS_ASSERT_MSG (m_epcHelper != 0, "X2 interfaces cannot be set up when the EPC is not used");
+	NS_ASSERT_MSG (m_ngcHelper != 0, "X2 interfaces cannot be set up when the NGC is not used");
    // make interface between mmWave and mmWave
 	for (NodeContainer::Iterator i = mmWaveEnbNodes.Begin (); i != mmWaveEnbNodes.End (); ++i)
     {
@@ -2439,7 +2439,7 @@ MmWaveHelper::AddX2Interface (NodeContainer lteEnbNodes, NodeContainer mmWaveEnb
     }
  	
 	// add traces
-  	Config::Connect ("/NodeList/*/$ns3::EpcX2/RxPDU",
+  	Config::Connect ("/NodeList/*/$ns3::NgcX2/RxPDU",
     	MakeCallback (&CoreNetworkStatsCalculator::LogX2Packet, m_cnStats));
 }
 void
@@ -2447,7 +2447,7 @@ MmWaveHelper::AddX2Interface (NodeContainer lteEnbNodes, NodeContainer mmWaveEnb
 {
 	NS_LOG_FUNCTION(this);
 
-	NS_ASSERT_MSG (m_epcHelper != 0, "X2 interfaces cannot be set up when the EPC is not used");
+	NS_ASSERT_MSG (m_ngcHelper != 0, "X2 interfaces cannot be set up when the NGC is not used");
    // make interface between mmWave and mmWave
 	for (NodeContainer::Iterator i = mmWaveEnbNodes1.Begin (); i != mmWaveEnbNodes1.End (); ++i)
     {
@@ -2556,7 +2556,7 @@ MmWaveHelper::AddX2Interface (NodeContainer lteEnbNodes, NodeContainer mmWaveEnb
     }
 
 	// add traces
-  	Config::Connect ("/NodeList/*/$ns3::EpcX2/RxPDU",
+  	Config::Connect ("/NodeList/*/$ns3::NgcX2/RxPDU",
     	MakeCallback (&CoreNetworkStatsCalculator::LogX2Packet, m_cnStats));
 }
 /* Call this from a script to configure the MAC PHY common parameters
@@ -2649,9 +2649,9 @@ MmWaveHelper::SetPhyMacConfigurationParameters (std::string paramName, std::stri
 }
 
 void
-MmWaveHelper::SetEpcHelper (Ptr<EpcHelper> epcHelper)
+MmWaveHelper::SetNgcHelper (Ptr<NgcHelper> ngcHelper)
 {
-	m_epcHelper = epcHelper;
+	m_ngcHelper = ngcHelper;
 }
 
 class MmWaveDrbActivator : public SimpleRefCount<MmWaveDrbActivator>
@@ -2704,7 +2704,7 @@ MmWaveDrbActivator::ActivateDrb (uint64_t imsi, uint16_t cellId, uint16_t rnti)
       Ptr<UeManager> ueManager = enbRrc->GetUeManager (rnti);
       NS_ASSERT (ueManager->GetState () == UeManager::CONNECTED_NORMALLY ||
                  ueManager->GetState () == UeManager::CONNECTION_RECONFIGURATION);
-      EpcEnbS1SapUser::DataRadioBearerSetupRequestParameters params;
+      NgcEnbS1SapUser::DataRadioBearerSetupRequestParameters params;
       params.rnti = rnti;
       params.bearer = m_bearer;
       params.bearerId = 0;
@@ -2728,10 +2728,10 @@ void
 MmWaveHelper::ActivateDataRadioBearer (Ptr<NetDevice> ueDevice, EpsBearer bearer)
 {
   NS_LOG_FUNCTION (this << ueDevice);
-  //NS_ASSERT_MSG (m_epcHelper == 0, "this method must not be used when the EPC is being used");
+  //NS_ASSERT_MSG (m_ngcHelper == 0, "this method must not be used when the NGC is being used");
 
-  // Normally it is the EPC that takes care of activating DRBs
-  // when the UE gets connected. When the EPC is not used, we achieve
+  // Normally it is the NGC that takes care of activating DRBs
+  // when the UE gets connected. When the NGC is not used, we achieve
   // the same behavior by hooking a dedicated DRB activation function
   // to the Enb RRC Connection Established trace source
 

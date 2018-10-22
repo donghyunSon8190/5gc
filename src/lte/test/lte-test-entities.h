@@ -29,7 +29,7 @@
 #include "ns3/lte-pdcp-sap.h"
 
 #include "ns3/net-device.h"
-#include <ns3/epc-enb-s1-sap.h>
+#include <ns3/ngc-enb-s1-sap.h>
 
 namespace ns3 {
 
@@ -263,16 +263,16 @@ class LteTestMac : public Object
 
 
 /**
- * RRC stub providing a testing S1 SAP user to be used with the EpcEnbApplication
+ * RRC stub providing a testing S1 SAP user to be used with the NgcEnbApplication
  * 
  */
-class EpcTestRrc : public Object
+class NgcTestRrc : public Object
 {
-  friend class MemberEpcEnbS1SapUser<EpcTestRrc>;
+  friend class MemberNgcEnbS1SapUser<NgcTestRrc>;
 
 public:
-  EpcTestRrc ();
-  virtual ~EpcTestRrc ();
+  NgcTestRrc ();
+  virtual ~NgcTestRrc ();
 
   // inherited from Object
   virtual void DoDispose (void);
@@ -283,22 +283,22 @@ public:
    * 
    * \param s the S1 SAP Provider
    */
-  void SetS1SapProvider (EpcEnbS1SapProvider* s);
+  void SetS1SapProvider (NgcEnbS1SapProvider* s);
 
   /** 
    * 
    * \return the S1 SAP user
    */
-  EpcEnbS1SapUser* GetS1SapUser ();
+  NgcEnbS1SapUser* GetS1SapUser ();
 
 private:
 
   // S1 SAP methods
-  void DoDataRadioBearerSetupRequest (EpcEnbS1SapUser::DataRadioBearerSetupRequestParameters params);
-  void DoPathSwitchRequestAcknowledge (EpcEnbS1SapUser::PathSwitchRequestAcknowledgeParameters params);  
+  void DoDataRadioBearerSetupRequest (NgcEnbS1SapUser::DataRadioBearerSetupRequestParameters params);
+  void DoPathSwitchRequestAcknowledge (NgcEnbS1SapUser::PathSwitchRequestAcknowledgeParameters params);  
   
-  EpcEnbS1SapProvider* m_s1SapProvider;
-  EpcEnbS1SapUser* m_s1SapUser;
+  NgcEnbS1SapProvider* m_s1SapProvider;
+  NgcEnbS1SapUser* m_s1SapUser;
   
 
 };

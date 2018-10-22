@@ -655,60 +655,60 @@ LteTestMac::Receive (Ptr<NetDevice> nd, Ptr<const Packet> p, uint16_t protocol, 
 
 
 
-NS_OBJECT_ENSURE_REGISTERED (EpcTestRrc);
+NS_OBJECT_ENSURE_REGISTERED (NgcTestRrc);
 
-EpcTestRrc::EpcTestRrc ()
+NgcTestRrc::NgcTestRrc ()
   : m_s1SapProvider (0)
 {
   NS_LOG_FUNCTION (this);
-  m_s1SapUser = new MemberEpcEnbS1SapUser<EpcTestRrc> (this);
+  m_s1SapUser = new MemberNgcEnbS1SapUser<NgcTestRrc> (this);
 }
 
 
-EpcTestRrc::~EpcTestRrc ()
+NgcTestRrc::~NgcTestRrc ()
 {
   NS_LOG_FUNCTION (this);
 }
 
 
 void
-EpcTestRrc::DoDispose ()
+NgcTestRrc::DoDispose ()
 {
   NS_LOG_FUNCTION (this);
   delete m_s1SapUser;
 }
 
 TypeId
-EpcTestRrc::GetTypeId (void)
+NgcTestRrc::GetTypeId (void)
 {
-  NS_LOG_FUNCTION ("EpcTestRrc::GetTypeId");
-  static TypeId tid = TypeId ("ns3::EpcTestRrc")
+  NS_LOG_FUNCTION ("NgcTestRrc::GetTypeId");
+  static TypeId tid = TypeId ("ns3::NgcTestRrc")
     .SetParent<Object> ()
-    .AddConstructor<EpcTestRrc> ()
+    .AddConstructor<NgcTestRrc> ()
   ;
   return tid;
 }
 void 
-EpcTestRrc::SetS1SapProvider (EpcEnbS1SapProvider * s)
+NgcTestRrc::SetS1SapProvider (NgcEnbS1SapProvider * s)
 {
   m_s1SapProvider = s;
 }
 
   
-EpcEnbS1SapUser* 
-EpcTestRrc::GetS1SapUser ()
+NgcEnbS1SapUser* 
+NgcTestRrc::GetS1SapUser ()
 {
   return m_s1SapUser;
 }
 
 void 
-EpcTestRrc::DoDataRadioBearerSetupRequest (EpcEnbS1SapUser::DataRadioBearerSetupRequestParameters request)
+NgcTestRrc::DoDataRadioBearerSetupRequest (NgcEnbS1SapUser::DataRadioBearerSetupRequestParameters request)
 {
 
 }
   
 void 
-EpcTestRrc::DoPathSwitchRequestAcknowledge (EpcEnbS1SapUser::PathSwitchRequestAcknowledgeParameters params)
+NgcTestRrc::DoPathSwitchRequestAcknowledge (NgcEnbS1SapUser::PathSwitchRequestAcknowledgeParameters params)
 {
 
 }
