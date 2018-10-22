@@ -20,7 +20,7 @@ the figure :ref:`fig-ngc-topology`. There are two main components:
 
  * the NGC Model. This models includes core network
    interfaces, protocols and entities. These entities and protocols
-   reside within the SGW, PGW and MME nodes, and partially within the
+   reside within the SMF, UPF and MME nodes, and partially within the
    eNB nodes.
 
 
@@ -115,16 +115,16 @@ The main objective of the NGC model is to provides means for the
 simulation of end-to-end IP connectivity over the LTE model. 
 To this aim, it supports for the
 interconnection of multiple UEs to the Internet, via a radio access
-network of multiple eNBs connected to a single SGW/PGW node, as shown
+network of multiple eNBs connected to a single SMF/UPF node, as shown
 in Figure :ref:`fig-ngc-topology`.
 
 The following design choices have been made for the NGC model:
 
  #. The only Packet Data Network (PDN) type supported is IPv4.
- #. The SGW and PGW functional entities are implemented within a single
-    node, which is hence referred to as the SGW/PGW node.
- #. The scenarios with inter-SGW mobility are not of interests. Hence, a
-    single SGW/PGW node will be present in all simulations scenarios 
+ #. The SMF and UPF functional entities are implemented within a single
+    node, which is hence referred to as the SMF/UPF node.
+ #. The scenarios with inter-SMF mobility are not of interests. Hence, a
+    single SMF/UPF node will be present in all simulations scenarios 
  #. A requirement for the NGC model is that it can be used to simulate the
     end-to-end performance of realistic applications. Hence, it should
     be possible to use with the NGC model any regular ns-3 application
@@ -133,13 +133,13 @@ The following design choices have been made for the NGC model:
     with the presence of multiple eNBs, some of which might be
     equipped with a backhaul connection with limited capabilities. In
     order to simulate such scenarios, the user data plane
-    protocols being used between the eNBs and the SGW/PGW should be
+    protocols being used between the eNBs and the SMF/UPF should be
     modeled accurately.
  #. It should be possible for a single UE to use different applications
     with different QoS profiles. Hence, multiple EPS bearers should be
     supported for each UE. This includes the necessary classification
     of TCP/UDP traffic over IP done at the UE in the uplink and at the
-    PGW in the downlink.
+    UPF in the downlink.
  #. The focus of the NGC model is mainly on the NGC data plane. The
     accurate modeling of the NGC control plane is, 
     for the time being, not a requirement; hence, the necessary control plane
@@ -259,8 +259,8 @@ In Figure :ref:`fig-lte-ngc-e2e-data-protocol-stack`, we represent the
 end-to-end LTE-NGC data plane protocol stack as it is modeled in the
 simulator. From the figure, it is evident that the 
 biggest simplification introduced in the data plane model
-is the inclusion of the SGW and PGW functionality within a single
-SGW/PGW node, which removes the need for the S5 or S8 interfaces 
+is the inclusion of the SMF and UPF functionality within a single
+SMF/UPF node, which removes the need for the S5 or S8 interfaces 
 specified by 3GPP. On the other hand, for both the S1-U protocol stack and
 the LTE radio protocol stack all the protocol layers specified by 3GPP
 are present. 
@@ -286,7 +286,7 @@ modeled explicitly are the S1-AP, the X2-AP and the S11 interfaces.
 We note that the S1-AP and the S11 interfaces are modeled in a simplified
 fashion, by using just one pair of interface classes to model the
 interaction between entities that reside on different nodes (the eNB
-and the MME for the S1-AP interface, and the MME and the SGW for the
+and the MME for the S1-AP interface, and the MME and the SMF for the
 S11 interface). In practice, this means that the primitives of these
 interfaces are mapped to a direct function call between the two
 objects. On the other hand, the X2-AP interface is being modeled using
@@ -3095,16 +3095,16 @@ corresponding protocol stack is shown in Figure
 :ref:`fig-lte-ngc-e2e-data-protocol-stack`. As shown in the figure,
 there are two different layers of 
 IP networking. The first one is the end-to-end layer, which provides end-to-end 
-connectivity to the users; this layers involves the UEs, the PGW and
+connectivity to the users; this layers involves the UEs, the UPF and
 the remote host (including eventual internet routers and hosts in
 between), but does not involve the eNB. By default, UEs are assigned a public IPv4 address in the 7.0.0.0/8
-network, and the PGW gets the address 7.0.0.1, which is used by all
+network, and the UPF gets the address 7.0.0.1, which is used by all
 UEs as the gateway to reach the internet. 
 
 The second layer of IP networking is the NGC local area network. This
-involves all eNB nodes and the SGW/PGW node. This network is
+involves all eNB nodes and the SMF/UPF node. This network is
 implemented as a set of point-to-point links which connect each eNB
-with the SGW/PGW node; thus, the SGW/PGW has a set of point-to-point
+with the SMF/UPF node; thus, the SMF/UPF has a set of point-to-point
 devices, each providing connectivity to a different eNB. By default, a
 10.x.y.z/30 subnet is assigned to each point-to-point link (a /30
 subnet is the smallest subnet that allows for two distinct host
@@ -3127,15 +3127,15 @@ To begin with, we consider the case of the downlink, which is depicted
 in Figure :ref:`fig-ngc-data-flow-dl`.   
 Downlink Ipv4 packets are generated from a generic remote host, and
 addressed to one of the UE device. Internet routing will take care of
-forwarding the packet to the generic NetDevice of the SGW/PGW node
+forwarding the packet to the generic NetDevice of the SMF/UPF node
 which is connected to the internet (this is the Gi interface according
-to 3GPP terminology). The SGW/PGW has a VirtualNetDevice which is
+to 3GPP terminology). The SMF/UPF has a VirtualNetDevice which is
 assigned the gateway IP address of the UE subnet; hence, static
 routing rules will cause the incoming packet from the internet to be
 routed through this VirtualNetDevice. Such device starts the
 GTP/UDP/IP tunneling procedure, by forwarding the packet to a
-dedicated application in the SGW/PGW  node which is called
-NgcSgwPgwApplication. This application does the following operations:
+dedicated application in the SMF/UPF  node which is called
+NgcSmfUpfApplication. This application does the following operations:
 
  #. it determines the eNB node to which the UE is attached, by looking
     at the IP destination address (which is the address of the UE);
@@ -3217,23 +3217,23 @@ following operations:
     Bearers;
  #. it adds a GTP-U header on the packet, including the TEID
     determined previously;
- #. it sends the packet to the SGW/PGW node via the UDP socket
+ #. it sends the packet to the SMF/UPF node via the UDP socket
     connected to the S1-U point-to-point net device.
 
 At this point, the packet contains the S1-U IP, UDP and GTP headers in
 addition to the original end-to-end IP header. When the packet is
 received by the corresponding S1-U point-to-point NetDevice of the
-SGW/PGW node, it is delivered locally (as the destination address of
+SMF/UPF node, it is delivered locally (as the destination address of
 the outmost IP header matches the address of the point-to-point net
 device). The local delivery process will forward the packet to the
-NgcSgwPgwApplication via the correponding UDP socket. The
-NgcSgwPgwApplication then removes the GTP header and forwards the
+NgcSmfUpfApplication via the correponding UDP socket. The
+NgcSmfUpfApplication then removes the GTP header and forwards the
 packet to the VirtualNetDevice. At this point, the outmost header
 of the packet is the end-to-end IP header. Hence, if the destination
 address within this header is a remote host on the internet, the
 packet is sent to the internet via the corresponding NetDevice of the
-SGW/PGW. In the event that the packet is addressed to another UE, the
-IP stack of the SGW/PGW will redirect the packet again to the
+SMF/UPF. In the event that the packet is addressed to another UE, the
+IP stack of the SMF/UPF will redirect the packet again to the
 VirtualNetDevice, and the packet will go through the dowlink delivery
 process in order to reach its destination UE.
 
@@ -3538,10 +3538,10 @@ indication and Handover Report are not supported at this stage.
 S11
 ---
 
-The S11 interface provides control plane interaction between the SGW
+The S11 interface provides control plane interaction between the SMF
 and the MME using the GTPv2-C protocol specified in [TS29274]_. In the
 simulator, this interface is modeled in an ideal 
-fashion, with direct interaction between the SGW and the MME objects,
+fashion, with direct interaction between the SMF and the MME objects,
 without actually implementing the encoding of the messages and without actually
 transmitting any PDU on any link. 
 

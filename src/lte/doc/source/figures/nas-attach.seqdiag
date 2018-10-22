@@ -1,6 +1,6 @@
 
 diagram {
-	NgcUeNas; LteUeRrc; LteEnbRrc; NgcEnbApplication; NgcSgwPgwApplication; NgcMme;	
+	NgcUeNas; LteUeRrc; LteEnbRrc; NgcEnbApplication; NgcSmfUpfApplication; NgcMme;	
 	
 	
 	NgcUeNas ->> LteUeRrc [label="ForceCampedOnEnb (CellId)"];
@@ -9,9 +9,9 @@ diagram {
 	LteEnbRrc ->> NgcEnbApplication [label="initial UE message"]		
 	NgcEnbApplication ->> NgcMme [label="S1-AP INITIAL UE MESSAGE"]
 	NgcMme ->> NgcMme [label="store IMSI->eNB UE id (RNTI) mapping"]
-	NgcMme ->> NgcSgwPgwApplication [label="S11 CREATE SESSION"]
-	NgcSgwPgwApplication ->> NgcSgwPgwApplication [label="setup S1-U bearers"]
-	NgcMme <<- NgcSgwPgwApplication [label="S11 CREATE SESSION RESPONSE"]
+	NgcMme ->> NgcSmfUpfApplication [label="S11 CREATE SESSION"]
+	NgcSmfUpfApplication ->> NgcSmfUpfApplication [label="setup S1-U bearers"]
+	NgcMme <<- NgcSmfUpfApplication [label="S11 CREATE SESSION RESPONSE"]
 	NgcEnbApplication <<- NgcMme [label="S1-AP INITIAL CONTEXT SETUP (bearers to be created)"]
 	NgcEnbApplication ->> NgcMme [label="S1-AP INITIAL CONTEXT SETUP RESPONSE"]
 	NgcEnbApplication ->> NgcEnbApplication [label="setup S1-U bearers"]	

@@ -814,14 +814,14 @@ the default; otherwise, the attribute won't be changed (e.g., if
 you changed the default to ``RLC_AM_ALWAYS``, it won't be touched).
 
 It is to be noted that the ``NgcHelper`` will also automatically
-create the PGW node and configure it so that it can properly handle
+create the UPF node and configure it so that it can properly handle
 traffic from/to the LTE radio access network.  Still,
-you need to add some explicit code to connect the PGW to other
+you need to add some explicit code to connect the UPF to other
 IPv4 networks (e.g., the internet). Here is a very simple example about
-how to connect a single remote host to the PGW via a point-to-point
+how to connect a single remote host to the UPF via a point-to-point
 link::
 
-  Ptr<Node> pgw = ngcHelper->GetPgwNode ();
+  Ptr<Node> upf = ngcHelper->GetUpfNode ();
 
    // Create a single RemoteHost
   NodeContainer remoteHostContainer;
@@ -835,7 +835,7 @@ link::
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));  
-  NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);  
+  NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);  
   Ipv4AddressHelper ipv4h;
   ipv4h.SetBase ("1.0.0.0", "255.0.0.0");
   Ipv4InterfaceContainer internetIpIfaces = ipv4h.Assign (internetDevices);
@@ -935,7 +935,7 @@ That's all! You can now start your simulation as usual::
 Using the NGC with emulation mode
 ---------------------------------
 
-In the previous section we used PointToPoint links for the connection between the eNBs and the SGW (S1-U interface) and among eNBs (X2-U and X2-C interfaces). The LTE module supports using emulated links instead of PointToPoint links. This is achieved by just replacing the creation of ``LteHelper`` and ``NgcHelper`` with the following code::
+In the previous section we used PointToPoint links for the connection between the eNBs and the SMF (S1-U interface) and among eNBs (X2-U and X2-C interfaces). The LTE module supports using emulated links instead of PointToPoint links. This is achieved by just replacing the creation of ``LteHelper`` and ``NgcHelper`` with the following code::
 
   Ptr<LteHelper> lteHelper = CreateObject<LteHelper> ();
   Ptr<EmuNgcHelper>  ngcHelper = CreateObject<EmuNgcHelper> ();
@@ -943,7 +943,7 @@ In the previous section we used PointToPoint links for the connection between th
   ngcHelper->Initialize ();
 
 
-The attributes ``ns3::EmuNgcHelper::sgwDeviceName`` and ``ns3::EmuNgcHelper::enbDeviceName`` are used to set the name of the devices used for transporting the S1-U, X2-U and X2-C interfaces at the SGW and eNB, respectively. We will now show how this is done in an example where we execute the example program ``lena-simple-ngc-emu`` using two virtual ethernet interfaces. 
+The attributes ``ns3::EmuNgcHelper::smfDeviceName`` and ``ns3::EmuNgcHelper::enbDeviceName`` are used to set the name of the devices used for transporting the S1-U, X2-U and X2-C interfaces at the SMF and eNB, respectively. We will now show how this is done in an example where we execute the example program ``lena-simple-ngc-emu`` using two virtual ethernet interfaces. 
 
 First of all we build ns-3 appropriately::
 
@@ -977,7 +977,7 @@ Then we setup two virtual ethernet interfaces, and start wireshark to look at th
 
 We can now run the example program with the simulated clock::
 
-  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::sgwDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1"
+  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::smfDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1"
 
 
 Using wireshark, you should see ARP resolution first, then some GTP
@@ -985,7 +985,7 @@ packets exchanged both in uplink and downlink.
 
 The default setting of the example program is 1 eNB and 1UE. You can change this via command line parameters, e.g.::
 
-  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::sgwDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1 --nEnbs=2 --nUesPerEnb=2"
+  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::smfDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1 --nEnbs=2 --nUesPerEnb=2"
 
 
 To get a list of the available parameters::
@@ -1006,7 +1006,7 @@ linked modules::
 
 Then run the example program like this::
 
-  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::sgwDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1 --simulatorImplementationType=ns3::RealtimeSimulatorImpl --ns3::RealtimeSimulatorImpl::SynchronizationMode=HardLimit"
+  ./waf --run lena-simple-ngc-emu --command="%s --ns3::EmuNgcHelper::smfDeviceName=veth0 --ns3::EmuNgcHelper::enbDeviceName=veth1 --simulatorImplementationType=ns3::RealtimeSimulatorImpl --ns3::RealtimeSimulatorImpl::SynchronizationMode=HardLimit"
 
 
 note the HardLimit setting, which will cause the program to terminate
@@ -1371,7 +1371,7 @@ handover procedure. As apparent from the Figure
 are many of them and they use different interfaces and protocols. For the sake
 of simplicity, we can safely assume that the X2 interface (between the source
 eNodeB and the target eNodeB) and the S1 interface (between the target eNodeB
-and the SGW/PGW) are quite stable. Therefore we will focus our attention to the
+and the SMF/UPF) are quite stable. Therefore we will focus our attention to the
 RRC protocol (between the UE and the eNodeBs) and the Random Access procedure,
 which are normally transmitted through the air and susceptible to degradation of
 channel condition. 
@@ -2363,7 +2363,7 @@ activation that the output is as expected. In detail:
 
  * then check packet transmissions on the data plane, starting by
    enabling the log componbents LteUeNetDevice and the
-   NgcSgwPgwApplication, then NgcEnbApplication, then moving down the
+   NgcSmfUpfApplication, then NgcEnbApplication, then moving down the
    LTE radio stack (PDCP, RLC, MAC, and finally PHY). All this until
    you find where packets stop being processed / forwarded. 
 

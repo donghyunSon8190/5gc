@@ -41,7 +41,7 @@
 #include <ns3/packet-socket-helper.h>
 #include <ns3/packet-socket-address.h>
 #include <ns3/ngc-enb-application.h>
-#include <ns3/ngc-sgw-pgw-application.h>
+#include <ns3/ngc-smf-upf-application.h>
 
 #include <ns3/lte-enb-rrc.h>
 #include <ns3/ngc-x2.h>
@@ -89,18 +89,18 @@ MmWavePointToPointNgcHelper::MmWavePointToPointNgcHelper ()
   // we use a /8 net for all UEs
   m_ueAddressHelper.SetBase ("7.0.0.0", "255.0.0.0");
   
-  // create SgwPgwNode
-  m_sgwPgw = CreateObject<Node> ();
+  // create SmfUpfNode
+  m_smfUpf = CreateObject<Node> ();
   InternetStackHelper internet;
-  internet.Install (m_sgwPgw);
+  internet.Install (m_smfUpf);
 
   // create MmeNode
   m_mmeNode = CreateObject<Node> ();
   internet.Install (m_mmeNode);
   
   // create S1-U socket
-  Ptr<Socket> sgwPgwS1uSocket = Socket::CreateSocket (m_sgwPgw, TypeId::LookupByName ("ns3::UdpSocketFactory"));
-  int retval = sgwPgwS1uSocket->Bind (InetSocketAddress (Ipv4Address::GetAny (), m_gtpuUdpPort));
+  Ptr<Socket> smfUpfS1uSocket = Socket::CreateSocket (m_smfUpf, TypeId::LookupByName ("ns3::UdpSocketFactory"));
+  int retval = smfUpfS1uSocket->Bind (InetSocketAddress (Ipv4Address::GetAny (), m_gtpuUdpPort));
   NS_ASSERT (retval == 0);
 
   // create S1-AP socket for MmeNode
@@ -116,31 +116,31 @@ MmWavePointToPointNgcHelper::MmWavePointToPointNgcHelper ()
   // yes we need this
   m_tunDevice->SetAddress (Mac48Address::Allocate ()); 
 
-  m_sgwPgw->AddDevice (m_tunDevice);
+  m_smfUpf->AddDevice (m_tunDevice);
   NetDeviceContainer tunDeviceContainer;
   tunDeviceContainer.Add (m_tunDevice);
   
   // the TUN device is on the same subnet as the UEs, so when a packet
   // addressed to an UE arrives at the intenet to the WAN interface of
-  // the PGW it will be forwarded to the TUN device. 
+  // the UPF it will be forwarded to the TUN device. 
   Ipv4InterfaceContainer tunDeviceIpv4IfContainer = m_ueAddressHelper.Assign (tunDeviceContainer);  
 
-  // create NgcSgwPgwApplication
-  m_sgwPgwApp = CreateObject<NgcSgwPgwApplication> (m_tunDevice, sgwPgwS1uSocket);
-  m_sgwPgw->AddApplication (m_sgwPgwApp);
+  // create NgcSmfUpfApplication
+  m_smfUpfApp = CreateObject<NgcSmfUpfApplication> (m_tunDevice, smfUpfS1uSocket);
+  m_smfUpf->AddApplication (m_smfUpfApp);
   
-  // connect SgwPgwApplication and virtual net device for tunneling
-  m_tunDevice->SetSendCallback (MakeCallback (&NgcSgwPgwApplication::RecvFromTunDevice, m_sgwPgwApp));
+  // connect SmfUpfApplication and virtual net device for tunneling
+  m_tunDevice->SetSendCallback (MakeCallback (&NgcSmfUpfApplication::RecvFromTunDevice, m_smfUpfApp));
 
  // create S1apMme object and aggregate it with the m_mmeNode
   Ptr<NgcS1apMme> s1apMme = CreateObject<NgcS1apMme> (mmeS1apSocket, 1); // for now, only one mme!
   m_mmeNode->AggregateObject(s1apMme);
 
-  // create NgcMmeApplication and connect with SGW via S11 interface
+  // create NgcMmeApplication and connect with SMF via S11 interface
   m_mmeApp = CreateObject<NgcMmeApplication> ();
   m_mmeNode->AddApplication (m_mmeApp);
-  m_mmeApp->SetS11SapSgw (m_sgwPgwApp->GetS11SapSgw ());
-  m_sgwPgwApp->SetS11SapMme (m_mmeApp->GetS11SapMme ());
+  m_mmeApp->SetS11SapSmf (m_smfUpfApp->GetS11SapSmf ());
+  m_smfUpfApp->SetS11SapMme (m_mmeApp->GetS11SapMme ());
   // connect m_mmeApp to the s1apMme
   m_mmeApp->SetS1apSapMmeProvider(s1apMme->GetNgcS1apSapMmeProvider());
   s1apMme->SetNgcS1apSapMmeUser(m_mmeApp->GetS1apSapMme());
@@ -213,8 +213,8 @@ MmWavePointToPointNgcHelper::DoDispose ()
   NS_LOG_FUNCTION (this);
   m_tunDevice->SetSendCallback (MakeNullCallback<bool, Ptr<Packet>, const Address&, const Address&, uint16_t> ());
   m_tunDevice = 0;
-  m_sgwPgwApp = 0;  
-  m_sgwPgw->Dispose ();
+  m_smfUpfApp = 0;  
+  m_smfUpf->Dispose ();
 }
 
 
@@ -230,28 +230,28 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
   internet.Install (enb);
   NS_LOG_LOGIC ("number of Ipv4 ifaces of the eNB after node creation: " << enb->GetObject<Ipv4> ()->GetNInterfaces ());
 
-  // create a point to point link between the new eNB and the SGW with
+  // create a point to point link between the new eNB and the SMF with
   // the corresponding new NetDevices on each side
 /*
-  NodeContainer enbSgwNodes;
-  enbSgwNodes.Add (m_sgwPgw);
-  enbSgwNodes.Add (enb);
+  NodeContainer enbSmfNodes;
+  enbSmfNodes.Add (m_smfUpf);
+  enbSmfNodes.Add (enb);
 
   PointToPointHelper p2ph;
   p2ph.SetDeviceAttribute ("DataRate", DataRateValue (m_s1uLinkDataRate));
   p2ph.SetDeviceAttribute ("Mtu", UintegerValue (m_s1uLinkMtu));
   p2ph.SetChannelAttribute ("Delay", TimeValue (m_s1uLinkDelay));  
-  NetDeviceContainer enbSgwDevices = p2ph.Install (enb, m_sgwPgw);
+  NetDeviceContainer enbSmfDevices = p2ph.Install (enb, m_smfUpf);
   NS_LOG_LOGIC ("number of Ipv4 ifaces of the eNB after installing p2p dev: " << enb->GetObject<Ipv4> ()->GetNInterfaces ());  
-  Ptr<NetDevice> enbDev = enbSgwDevices.Get (0);
-  Ptr<NetDevice> sgwDev = enbSgwDevices.Get (1);
+  Ptr<NetDevice> enbDev = enbSmfDevices.Get (0);
+  Ptr<NetDevice> smfDev = enbSmfDevices.Get (1);
   m_s1uIpv4AddressHelper.NewNetwork ();
-  Ipv4InterfaceContainer enbSgwIpIfaces = m_s1uIpv4AddressHelper.Assign (enbSgwDevices);
+  Ipv4InterfaceContainer enbSmfIpIfaces = m_s1uIpv4AddressHelper.Assign (enbSmfDevices);
   NS_LOG_LOGIC ("number of Ipv4 ifaces of the eNB after assigning Ipv4 addr to S1 dev: " << enb->GetObject<Ipv4> ()->GetNInterfaces ());
 
   
-  Ipv4Address enbAddress = enbSgwIpIfaces.GetAddress (0);
-  Ipv4Address sgwAddress = enbSgwIpIfaces.GetAddress (1);
+  Ipv4Address enbAddress = enbSmfIpIfaces.GetAddress (0);
+  Ipv4Address smfAddress = enbSmfIpIfaces.GetAddress (1);
 
   // create S1-U socket for the ENB
   Ptr<Socket> enbS1uSocket = Socket::CreateSocket (enb, TypeId::LookupByName ("ns3::UdpSocketFactory"));
@@ -302,7 +302,7 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
   
 
   NS_LOG_INFO ("create NgcEnbApplication");
-  Ptr<NgcEnbApplication> enbApp = CreateObject<NgcEnbApplication> (enbLteSocket, enbS1uSocket, enbAddress, sgwAddress, cellId);
+  Ptr<NgcEnbApplication> enbApp = CreateObject<NgcEnbApplication> (enbLteSocket, enbS1uSocket, enbAddress, smfAddress, cellId);
   enb->AddApplication (enbApp);
   NS_ASSERT (enb->GetNApplications () == 1);
   NS_ASSERT_MSG (enb->GetApplication (0)->GetObject<NgcEnbApplication> () != 0, "cannot retrieve NgcEnbApplication");
@@ -325,7 +325,7 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
   Ptr<NgcS1apMme> s1apMme = m_mmeNode->GetObject<NgcS1apMme> ();
   s1apMme->AddS1apInterface (cellId, mme_enbAddress);
   
-  m_sgwPgwApp->AddEnb (cellId, enbAddress, sgwAddress);
+  m_smfUpfApp->AddEnb (cellId, enbAddress, smfAddress);
 */
   NodeContainer switchNodes, controllerNodes;
   switchNodes.Create(3);
@@ -355,7 +355,7 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
   switch2Ports.Add (link.Get (1));
 
   // Connect servers to border switch
-  link = csmaHelper.Install (NodeContainer (m_sgwPgw, switchNodes.Get (0)));
+  link = csmaHelper.Install (NodeContainer (m_smfUpf, switchNodes.Get (0)));
   serverDevices.Add (link.Get (0));
   switch0Ports.Add (link.Get (1));
 
@@ -390,7 +390,7 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
   Ipv4InterfaceContainer internetIpIfaces;
   ipv4switches.SetBase ("10.1.0.0", "255.255.0.0", "0.0.1.2");
   internetIpIfaces = ipv4switches.Assign (serverDevices);
-  Ipv4Address sgwAddress = internetIpIfaces.GetAddress(0);
+  Ipv4Address smfAddress = internetIpIfaces.GetAddress(0);
   ipv4switches.SetBase ("10.1.0.0", "255.255.0.0", "0.0.2.1");
   internetIpIfaces = ipv4switches.Assign (clientDevices);
   Ipv4Address enbAddress = internetIpIfaces.GetAddress(0);
@@ -398,10 +398,10 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
   Ipv4Address serverAddr ("10.1.1.1");
 
   Ptr<NetDevice> enbDev = clientDevices.Get(0);
-  Ptr<NetDevice> sgwDev = serverDevices.Get(0);
+  Ptr<NetDevice> smfDev = serverDevices.Get(0);
 
   cout<<"enbAddress: "<<enbAddress<<endl;
-  cout<<"sgwAddress: "<<sgwAddress<<endl;
+  cout<<"smfAddress: "<<smfAddress<<endl;
 
   cout<<"---border switch---"<<endl;
   for(uint32_t i=0; i<switch0Ports.GetN(); i++)
@@ -446,7 +446,7 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
   NS_ASSERT (retval == 0);
 
   NS_LOG_INFO ("create NgcEnbApplication");
-  Ptr<NgcEnbApplication> enbApp = CreateObject<NgcEnbApplication> (enbLteSocket, enbS1uSocket, enbAddress, sgwAddress, cellId);
+  Ptr<NgcEnbApplication> enbApp = CreateObject<NgcEnbApplication> (enbLteSocket, enbS1uSocket, enbAddress, smfAddress, cellId);
   //Ptr<NgcEnbApplication> enbApp = CreateObject<NgcEnbApplication> (enbLteSocket, enbS1uSocket, enbAddress, serverAddr, cellId);
 
   enb->AddApplication (enbApp);
@@ -461,8 +461,8 @@ MmWavePointToPointNgcHelper::AddEnb (Ptr<Node> enb, Ptr<NetDevice> lteEnbNetDevi
 
   NS_LOG_INFO ("connect S1-AP interface");
   m_mme->AddEnb (cellId, enbAddress, enbApp->GetS1apSapEnb ());
-  //  m_sgwPgwApp->AddEnb (cellId, enbAddress, sgwAddress);
-  m_sgwPgwApp->AddEnb (cellId, enbAddress, serverAddr);
+  //  m_smfUpfApp->AddEnb (cellId, enbAddress, smfAddress);
+  m_smfUpfApp->AddEnb (cellId, enbAddress, serverAddr);
 
   enbApp->SetS1apSapMme (m_mme->GetS1apSapMme ());
 }
@@ -561,7 +561,7 @@ MmWavePointToPointNgcHelper::AddUe (Ptr<NetDevice> ueDevice, uint64_t imsi)
   NS_LOG_FUNCTION (this << imsi << ueDevice );
   
   m_mmeApp->AddUe (imsi);
-  m_sgwPgwApp->AddUe (imsi);
+  m_smfUpfApp->AddUe (imsi);
   
 
 }
@@ -571,7 +571,7 @@ MmWavePointToPointNgcHelper::ActivateEpsBearer (Ptr<NetDevice> ueDevice, uint64_
 {
   NS_LOG_FUNCTION (this << ueDevice << imsi);
 
-  // we now retrieve the IPv4 address of the UE and notify it to the SGW;
+  // we now retrieve the IPv4 address of the UE and notify it to the SMF;
   // we couldn't do it before since address assignment is triggered by
   // the user simulation program, rather than done by the NGC   
   Ptr<Node> ueNode = ueDevice->GetNode (); 
@@ -581,7 +581,7 @@ MmWavePointToPointNgcHelper::ActivateEpsBearer (Ptr<NetDevice> ueDevice, uint64_
   NS_ASSERT (interface >= 0);
   NS_ASSERT (ueIpv4->GetNAddresses (interface) == 1);
   Ipv4Address ueAddr = ueIpv4->GetAddress (interface, 0).GetLocal ();
-  NS_LOG_LOGIC (" UE IP address: " << ueAddr);  m_sgwPgwApp->SetUeAddress (imsi, ueAddr);
+  NS_LOG_LOGIC (" UE IP address: " << ueAddr);  m_smfUpfApp->SetUeAddress (imsi, ueAddr);
   
   uint8_t bearerId = m_mmeApp->AddBearer (imsi, tft, bearer);
   Ptr<MmWaveUeNetDevice> ueLteDevice = ueDevice->GetObject<MmWaveUeNetDevice> ();
@@ -597,7 +597,7 @@ MmWavePointToPointNgcHelper::ActivateEpsBearer (Ptr<NetDevice> ueDevice, Ptr<Ngc
 {
   NS_LOG_FUNCTION (this << ueDevice << imsi);
 
-  // we now retrieve the IPv4 address of the UE and notify it to the SGW;
+  // we now retrieve the IPv4 address of the UE and notify it to the SMF;
   // we couldn't do it before since address assignment is triggered by
   // the user simulation program, rather than done by the NGC   
   Ptr<Node> ueNode = ueDevice->GetNode (); 
@@ -607,7 +607,7 @@ MmWavePointToPointNgcHelper::ActivateEpsBearer (Ptr<NetDevice> ueDevice, Ptr<Ngc
   NS_ASSERT (interface >= 0);
   NS_ASSERT (ueIpv4->GetNAddresses (interface) == 1);
   Ipv4Address ueAddr = ueIpv4->GetAddress (interface, 0).GetLocal ();
-  NS_LOG_LOGIC (" UE IP address: " << ueAddr);  m_sgwPgwApp->SetUeAddress (imsi, ueAddr);
+  NS_LOG_LOGIC (" UE IP address: " << ueAddr);  m_smfUpfApp->SetUeAddress (imsi, ueAddr);
   
   uint8_t bearerId = m_mmeApp->AddBearer (imsi, tft, bearer);
   ueNas->ActivateEpsBearer (bearer, tft);
@@ -616,9 +616,9 @@ MmWavePointToPointNgcHelper::ActivateEpsBearer (Ptr<NetDevice> ueDevice, Ptr<Ngc
 
 
 Ptr<Node>
-MmWavePointToPointNgcHelper::GetPgwNode ()
+MmWavePointToPointNgcHelper::GetUpfNode ()
 {
-  return m_sgwPgw;
+  return m_smfUpf;
 }
 
 
@@ -640,7 +640,7 @@ Ipv4Address
 MmWavePointToPointNgcHelper::GetUeDefaultGatewayAddress ()
 {
   // return the address of the tun device
-  return m_sgwPgw->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ();
+  return m_smfUpf->GetObject<Ipv4> ()->GetAddress (1, 0).GetLocal ();
 }
 
 

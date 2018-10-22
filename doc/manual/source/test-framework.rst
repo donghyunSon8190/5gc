@@ -285,7 +285,7 @@ will result in a list of the test suite being displayed, similar to
   system       buildings-shadowing-test
   system       devices-mesh-dot11s-regression
   system       devices-mesh-flame-regression
-  system       epc-gtpu
+  system       ngc-gtpu
   ...
   unit         wimax-phy-layer
   unit         wimax-service-flow

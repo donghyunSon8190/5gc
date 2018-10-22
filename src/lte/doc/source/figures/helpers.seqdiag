@@ -6,7 +6,7 @@ SimProgram; LteHelper; NgcHelper;
 
 SimProgram ->> LteHelper [label="create"]
 SimProgram ->> NgcHelper [label="create"]
-NgcHelper ->> NgcHelper [label="create MME and SGW/PGW"]
+NgcHelper ->> NgcHelper [label="create MME and SMF/UPF"]
 SimProgram ->> LteHelper [label="InstallEnbDevice"] 
 LteHelper ->> LteHelper [label="install protocol stack on eNB"]
 LteHelper ->> NgcHelper [label="AddEnb"]

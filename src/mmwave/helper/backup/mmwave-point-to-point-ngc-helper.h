@@ -45,7 +45,7 @@ namespace ns3 {
 class Node;
 class NetDevice;
 class VirtualNetDevice;
-class NgcSgwPgwApplication;
+class NgcSmfUpfApplication;
 class NgcX2;
 class NgcMme;
 class NgcUeNas;
@@ -57,7 +57,7 @@ class NgcS1apMme;
  * \brief Create an NGC network with PointToPoint links
  *
  * This Helper will create an NGC network topology comprising of a
- * single node that implements both the SGW and PGW functionality, and
+ * single node that implements both the SMF and UPF functionality, and
  * an MME node. The S1-U, S1-AP, X2-U and X2-C interfaces are realized over
  * PointToPoint links. 
  */
@@ -89,7 +89,7 @@ public:
   virtual void AddX2Interface (Ptr<Node> enbNode1, Ptr<Node> enbNode2);
   virtual uint8_t ActivateEpsBearer (Ptr<NetDevice> ueLteDevice, uint64_t imsi, Ptr<NgcTft> tft, EpsBearer bearer);
   virtual uint8_t ActivateEpsBearer (Ptr<NetDevice> ueLteDevice, Ptr<NgcUeNas> ueNas, uint64_t imsi, Ptr<NgcTft> tft, EpsBearer bearer);
-  virtual Ptr<Node> GetPgwNode ();
+  virtual Ptr<Node> GetUpfNode ();
   virtual Ptr<Node> GetMmeNode ();
   virtual Ipv4InterfaceContainer AssignUeIpv4Address (NetDeviceContainer ueDevices);
   virtual Ipv4Address GetUeDefaultGatewayAddress ();
@@ -99,19 +99,19 @@ public:
 private:
 
   /** 
-   * helper to assign addresses to UE devices as well as to the TUN device of the SGW/PGW
+   * helper to assign addresses to UE devices as well as to the TUN device of the SMF/UPF
    */
   Ipv4AddressHelper m_ueAddressHelper; 
   
   /**
-   * SGW-PGW network element
+   * SMF-UPF network element
    */
-  Ptr<Node> m_sgwPgw; 
+  Ptr<Node> m_smfUpf; 
 
   /**
-   * SGW-PGW application
+   * SMF-UPF application
    */
-  Ptr<NgcSgwPgwApplication> m_sgwPgwApp;
+  Ptr<NgcSmfUpfApplication> m_smfUpfApp;
 
   /**
    * TUN device implementing tunneling of user data over GTP-U/UDP/IP

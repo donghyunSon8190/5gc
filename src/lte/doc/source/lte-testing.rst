@@ -1207,7 +1207,7 @@ where the NGC model alone is used, without the LTE model (i.e.,
 without the LTE radio protocol stack, which is replaced by simple CSMA
 devices). This checks that the
 interoperation between multiple NgcEnbApplication instances in
-multiple eNBs and the NgcSgwPgwApplication instance in the SGW/PGW
+multiple eNBs and the NgcSmfUpfApplication instance in the SMF/UPF
 node works correctly in a variety of scenarios, with varying numbers
 of end users (nodes with a CSMA device installed), eNBs, and different
 traffic patterns (packet sizes and number of total packets).

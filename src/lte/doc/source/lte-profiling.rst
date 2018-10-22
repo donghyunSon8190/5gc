@@ -29,7 +29,7 @@ The simulation script used for all the E-UTRAN results showed in this documentat
 
    E-UTRAN
 
-For the NGC results, the script is ``src/lte/examples/lena-simple-ngc.cc``. It uses a complete E-UTRAN implementation (PHY+MAC+RLC/UM+PDCP) and the most relevant NGC user plane entities the PGW and SGW, including GTP-U tunneling. This script generates a given number of eNodeBs, distributed across a line and attaches a single UE to every eNodeB. It also creates an NGC network and an external host connected to it through the Internet. Each UE sends and receives data to and from the remote host. In addition, each UE is also sending data to the UE camped in the adjacent eNodeB.
+For the NGC results, the script is ``src/lte/examples/lena-simple-ngc.cc``. It uses a complete E-UTRAN implementation (PHY+MAC+RLC/UM+PDCP) and the most relevant NGC user plane entities the UPF and SMF, including GTP-U tunneling. This script generates a given number of eNodeBs, distributed across a line and attaches a single UE to every eNodeB. It also creates an NGC network and an external host connected to it through the Internet. Each UE sends and receives data to and from the remote host. In addition, each UE is also sending data to the UE camped in the adjacent eNodeB.
 
 .. _fig-ngcProfilingScenario:
 

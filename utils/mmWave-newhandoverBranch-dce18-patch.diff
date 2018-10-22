@@ -77,9 +77,9 @@ diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-helper.h ns-
  	void SetSchedulerType (std::string type);
  	std::string GetSchedulerType () const;
 
-diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-epc-helper.cc ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-epc-helper.cc
---- ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-epc-helper.cc	2017-01-17 16:23:05.789940861 +0100
-+++ ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-epc-helper.cc	2016-11-21 11:13:17.735408333 +0100
+diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-ngc-helper.cc ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-ngc-helper.cc
+--- ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-ngc-helper.cc	2017-01-17 16:23:05.789940861 +0100
++++ ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-ngc-helper.cc	2016-11-21 11:13:17.735408333 +0100
 @@ -66,16 +56,27 @@
      m_s1apUdpPort (36412)
  {
@@ -88,7 +88,7 @@ diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-point-to-poi
  
 -  // since we use point-to-point links for all S1-U links, 
 +void
-+MmWavePointToPointEpcHelper::DoInitialize ()
++MmWavePointToPointNgcHelper::DoInitialize ()
 +{
 +  NS_LOG_FUNCTION (this);
 +
@@ -111,31 +111,31 @@ diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-point-to-poi
 +  address = Ipv4Address(m_ueAddressBase.c_str());
 +  m_ueAddressHelper.SetBase (address, "255.0.0.0");
    
-   // create SgwPgwNode
-   m_sgwPgw = CreateObject<Node> ();
+   // create SmfUpfNode
+   m_smfUpf = CreateObject<Node> ();
 @@ -191,6 +192,26 @@
                     UintegerValue (3000),
-                    MakeUintegerAccessor (&MmWavePointToPointEpcHelper::m_x2LinkMtu),
+                    MakeUintegerAccessor (&MmWavePointToPointNgcHelper::m_x2LinkMtu),
                     MakeUintegerChecker<uint16_t> ())
 +    .AddAttribute ("UeBaseAddress",
-+                   "The network address of the UEs and the PGW",
++                   "The network address of the UEs and the UPF",
 +                   StringValue ("7.0.0.0"),
-+                   MakeStringAccessor (&MmWavePointToPointEpcHelper::m_ueAddressBase),
++                   MakeStringAccessor (&MmWavePointToPointNgcHelper::m_ueAddressBase),
 +                   MakeStringChecker ())
 +    .AddAttribute ("X2BaseAddress",
-+                   "The network address of the UEs and the PGW",
++                   "The network address of the UEs and the UPF",
 +                   StringValue ("10.0.0.0"),
-+                   MakeStringAccessor (&MmWavePointToPointEpcHelper::m_x2AddressBase),
++                   MakeStringAccessor (&MmWavePointToPointNgcHelper::m_x2AddressBase),
 +                   MakeStringChecker ())
 +    .AddAttribute ("S1apBaseAddress",
-+                   "The network address of the UEs and the PGW",
++                   "The network address of the UEs and the UPF",
 +                   StringValue ("11.0.0.0"),
-+                   MakeStringAccessor (&MmWavePointToPointEpcHelper::m_s1apAddressBase),
++                   MakeStringAccessor (&MmWavePointToPointNgcHelper::m_s1apAddressBase),
 +                   MakeStringChecker ())
 +    .AddAttribute ("S1uBaseAddress",
-+                   "The network address of the UEs and the PGW",
++                   "The network address of the UEs and the UPF",
 +                   StringValue ("12.0.0.0"),
-+                   MakeStringAccessor (&MmWavePointToPointEpcHelper::m_s1uAddressBase),
++                   MakeStringAccessor (&MmWavePointToPointNgcHelper::m_s1uAddressBase),
 +                   MakeStringChecker ())
    ;
    return tid;
@@ -145,15 +145,15 @@ diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-point-to-poi
    NS_ASSERT (interface >= 0);
    NS_ASSERT (ueIpv4->GetNAddresses (interface) == 1);
    Ipv4Address ueAddr = ueIpv4->GetAddress (interface, 0).GetLocal ();
--  NS_LOG_LOGIC (" UE IP address: " << ueAddr);  m_sgwPgwApp->SetUeAddress (imsi, ueAddr);
+-  NS_LOG_LOGIC (" UE IP address: " << ueAddr);  m_smfUpfApp->SetUeAddress (imsi, ueAddr);
 +  NS_LOG_LOGIC (" UE IP address: " << ueAddr);  
-+  m_sgwPgwApp->SetUeAddress (imsi, ueAddr);
++  m_smfUpfApp->SetUeAddress (imsi, ueAddr);
    
    uint8_t bearerId = m_mmeApp->AddBearer (imsi, tft, bearer);
    Ptr<MmWaveUeNetDevice> ueLteDevice = ueDevice->GetObject<MmWaveUeNetDevice> ();
-diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-epc-helper.h ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-epc-helper.h
---- ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-epc-helper.h	2017-01-17 16:23:05.789940861 +0100
-+++ ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-epc-helper.h	2016-11-21 11:13:17.735408333 +0100
+diff -Naur -x '*.py' -x '*.pyc' ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-ngc-helper.h ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-ngc-helper.h
+--- ns3-mmwave/src/mmwave/helper/mmwave-point-to-point-ngc-helper.h	2017-01-17 16:23:05.789940861 +0100
++++ ns-3-dev-dce/src/mmwave/helper/mmwave-point-to-point-ngc-helper.h	2016-11-21 11:13:17.735408333 +0100
 @@ -80,6 +71,7 @@
     *  Register this type.
     *  \return The object TypeId.

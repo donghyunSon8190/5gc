@@ -17,7 +17,7 @@
  */
 
 #include "ns3/mmwave-helper.h"
-#include "ns3/epc-helper.h"
+#include "ns3/ngc-helper.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
@@ -26,7 +26,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/point-to-point-helper.h"
 #include "ns3/config-store.h"
-#include "ns3/mmwave-point-to-point-epc-helper.h"
+#include "ns3/mmwave-point-to-point-ngc-helper.h"
 //#include "ns3/gtk-config-store.h"
 #include <ns3/buildings-helper.h>
 #include <ns3/buildings-module.h>
@@ -324,11 +324,11 @@ main (int argc, char *argv[])
 {
 // LogComponentEnable ("LteUeRrc", LOG_LEVEL_ALL);
 //  LogComponentEnable ("LteEnbRrc", LOG_FUNCTION);
-//  LogComponentEnable("EpcUeNas", LOG_FUNCTION);
+//  LogComponentEnable("NgcUeNas", LOG_FUNCTION);
 //  LogComponentEnable ("LteEnbRrc", LOG_LEVEL_INFO);
 //  LogComponentEnable ("LteRlcTm", LOG_FUNCTION);
- // LogComponentEnable("MmWavePointToPointEpcHelper",LOG_FUNCTION);
-//  LogComponentEnable("EpcUeNas",LOG_FUNCTION);
+ // LogComponentEnable("MmWavePointToPointNgcHelper",LOG_FUNCTION);
+//  LogComponentEnable("NgcUeNas",LOG_FUNCTION);
  // LogComponentEnable("LtePdcp", LOG_FUNCTION);
  // LogComponentEnable ("MmWaveSpectrumPhy", LOG_FUNCTION);
  // LogComponentEnable ("MmWaveUeMac", LOG_FUNCTION);
@@ -343,37 +343,37 @@ main (int argc, char *argv[])
   //LogComponentEnable ("PacketSink", LOG_FUNCTION);
 //LogComponentEnable("MmWavePropagationLossModel",LOG_LEVEL_ALL);
 //  LogComponentEnable("LteRrcProtocolReal", LOG_FUNCTION);
-  //LogComponentEnable ("EpcMme", LOG_FUNCTION);
+  //LogComponentEnable ("NgcMme", LOG_FUNCTION);
  // LogComponentEnable ("mmWavePhyRxTrace", LOG_FUNCTION);
   //LogComponentEnable ("MmWaveRrMacScheduler", LOG_FUNCTION);
  // LogComponentEnable("McUeNetDevice", LOG_FUNCTION);
- // LogComponentEnable("EpcSgwPgwApplication", LOG_FUNCTION);
- // LogComponentEnable("EpcEnbApplication", LOG_FUNCTION);
+ // LogComponentEnable("NgcSmfUpfApplication", LOG_FUNCTION);
+ // LogComponentEnable("NgcEnbApplication", LOG_FUNCTION);
   //LogComponentEnable("MmWaveEnbMac", LOG_LOGIC);
  // LogComponentEnable("MmWaveEnbPhy", LOG_FUNCTION);
   //LogComponentEnable("LteEnbMac", LOG_FUNCTION);
  // LogComponentEnable("LteUePhy", LOG_FUNCTION);
   //LogComponentEnable ("LteEnbPhy", LOG_FUNCTION);
-//  LogComponentEnable("MmWavePointToPointEpcHelper", LOG_FUNCTION);
+//  LogComponentEnable("MmWavePointToPointNgcHelper", LOG_FUNCTION);
 //  LogComponentEnable("MmWaveHelper",LOG_FUNCTION);
-  //LogComponentEnable("EpcX2",LOG_FUNCTION);
- // LogComponentEnable("EpcX2",LOG_LOGIC);
+  //LogComponentEnable("NgcX2",LOG_FUNCTION);
+ // LogComponentEnable("NgcX2",LOG_LOGIC);
  // LogComponentEnable ("mmWaveRrcProtocolIdeal", LOG_FUNCTION);
   //LogComponentEnable ("MmWaveLteRrcProtocolReal", LOG_FUNCTION);
-  //LogComponentEnable("EpcX2Header", LOG_FUNCTION);
+  //LogComponentEnable("NgcX2Header", LOG_FUNCTION);
  // LogComponentEnable("McEnbPdcp",LOG_FUNCTION);
  // LogComponentEnable("McUePdcp",LOG_FUNCTION);
  //LogComponentEnable("LteRlcAm", LOG_FUNCTION);
 //  LogComponentEnable("LteRlcUmLowLat", LOG_FUNCTION);
-//  LogComponentEnable("EpcS1ap", LOG_FUNCTION);
-// LogComponentEnable("EpcMmeApplication", LOG_FUNCTION);
- // LogComponentEnable("EpcMme", LOG_FUNCTION);
+//  LogComponentEnable("NgcS1ap", LOG_FUNCTION);
+// LogComponentEnable("NgcMmeApplication", LOG_FUNCTION);
+ // LogComponentEnable("NgcMme", LOG_FUNCTION);
  // LogComponentEnable("LteRrcProtocolIdeal", LOG_LEVEL_ALL);
   //LogComponentEnable("MmWaveFlexTtiMacScheduler", LOG_FUNCTION);
 //  LogComponentEnable("AntennaArrayModel", LOG_FUNCTION);
  // LogComponentEnable("UdpServer", LOG_LEVEL_INFO);
   //LogComponentEnable("UdpClient", LOG_LEVEL_INFO);
-//  LogComponentEnable ("MmWavePointToPointEpcHelper",LOG_FUNCTION);
+//  LogComponentEnable ("MmWavePointToPointNgcHelper",LOG_FUNCTION);
 //  LogComponentEnable ("Socket",LOG_LEVEL_ALL);
  // LogComponentEnable("UdpSocketImpl", LOG_LEVEL_ALL);
  // LogComponentEnable("UdpL4Protocol", LOG_LEVEL_ALL);
@@ -461,11 +461,11 @@ main (int argc, char *argv[])
 	  Config::SetDefault ("ns3::LteRlcUmLowLat::ReportBufferStatusTimer", TimeValue(MicroSeconds(100.0)));
 	  Config::SetDefault ("ns3::LteEnbRrc::SrsPeriodicity", UintegerValue (320));
 	  Config::SetDefault ("ns3::LteEnbRrc::FirstSibTime", UintegerValue (2));
-	  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::X2LinkDelay", TimeValue (MicroSeconds(x2Latency)));
-	  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::X2LinkDataRate", DataRateValue(DataRate ("1000Gb/s")));
-	  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::X2LinkMtu",  UintegerValue(10000));
-	  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::S1uLinkDelay", TimeValue (MicroSeconds(1000)));
-	  Config::SetDefault ("ns3::MmWavePointToPointEpcHelper::S1apLinkDelay", TimeValue (MicroSeconds(mmeLatency)));
+	  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::X2LinkDelay", TimeValue (MicroSeconds(x2Latency)));
+	  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::X2LinkDataRate", DataRateValue(DataRate ("1000Gb/s")));
+	  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::X2LinkMtu",  UintegerValue(10000));
+	  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::S1uLinkDelay", TimeValue (MicroSeconds(1000)));
+	  Config::SetDefault ("ns3::MmWavePointToPointNgcHelper::S1apLinkDelay", TimeValue (MicroSeconds(mmeLatency)));
 	  Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
 	  Config::SetDefault ("ns3::TcpSocket::SndBufSize", UintegerValue (1024*1024*30));
 	  Config::SetDefault ("ns3::TcpSocket::RcvBufSize", UintegerValue (1024*1024*30));
@@ -476,8 +476,8 @@ main (int argc, char *argv[])
 	  Config::SetDefault ("ns3::LteRlcAm::StatusProhibitTimer", TimeValue(MilliSeconds(1.0)));
 	  Config::SetDefault ("ns3::LteRlcAm::MaxTxBufferSize", UintegerValue (300 *1024 * 1024));
 
-	  Config::SetDefault ("ns3::PointToPointEpcHelper::X2LinkDelay", TimeValue (MilliSeconds(x2LinkDelay)));
-	  Config::SetDefault ("ns3::PointToPointEpcHelper::X2LinkDataRate", DataRateValue (DataRate(X2dataRate)));
+	  Config::SetDefault ("ns3::PointToPointNgcHelper::X2LinkDelay", TimeValue (MilliSeconds(x2LinkDelay)));
+	  Config::SetDefault ("ns3::PointToPointNgcHelper::X2LinkDataRate", DataRateValue (DataRate(X2dataRate)));
 
 
       Config::SetDefault("ns3::McEnbPdcp::numberOfAlgorithm",UintegerValue(typeOfSplitting));
@@ -487,8 +487,8 @@ main (int argc, char *argv[])
 	  	  Ptr<MmWaveHelper> mmwaveHelper = CreateObject<MmWaveHelper> ();
 	   mmwaveHelper->SetSchedulerType ("ns3::"+scheduler);
 
-	   Ptr<MmWavePointToPointEpcHelper> epcHelper = CreateObject<MmWavePointToPointEpcHelper> ();
-	   mmwaveHelper->SetEpcHelper (epcHelper);
+	   Ptr<MmWavePointToPointNgcHelper> ngcHelper = CreateObject<MmWavePointToPointNgcHelper> ();
+	   mmwaveHelper->SetNgcHelper (ngcHelper);
 	   mmwaveHelper->SetHarqEnabled (harqEnabled);
 
 	  mmwaveHelper->SetAttribute ("PathlossModel", StringValue ("ns3::"+pathLossModel));
@@ -499,7 +499,7 @@ main (int argc, char *argv[])
 
 	   uint16_t nodeNum=1;
 
-	   Ptr<Node> pgw = epcHelper->GetPgwNode ();
+	   Ptr<Node> upf = ngcHelper->GetUpfNode ();
 	     NodeContainer remoteHostContainer;
 	     remoteHostContainer.Create (nodeNum);
 	      InternetStackHelper internet;
@@ -509,13 +509,13 @@ main (int argc, char *argv[])
 	     Ptr<Node> remoteHost ;
 	     for (uint16_t i=0 ; i<nodeNum; i++)
 	     {
-	     // Create the Internet by connecting remoteHost to pgw. Setup routing too
+	     // Create the Internet by connecting remoteHost to upf. Setup routing too
 	     remoteHost = remoteHostContainer.Get (i);
 	     PointToPointHelper p2ph;
 	     p2ph.SetDeviceAttribute ("DataRate", DataRateValue (DataRate ("100Gb/s")));
 	     p2ph.SetDeviceAttribute ("Mtu", UintegerValue (2500));
 	     p2ph.SetChannelAttribute ("Delay", TimeValue (Seconds (0.010)));
-	     NetDeviceContainer internetDevices = p2ph.Install (pgw, remoteHost);
+	     NetDeviceContainer internetDevices = p2ph.Install (upf, remoteHost);
 
 	     Ipv4AddressHelper ipv4h;
 		    std::ostringstream subnet;
@@ -633,14 +633,14 @@ main (int argc, char *argv[])
 	           // Install the IP stack on the UEs
 	             internet.Install (ueNodes);
 	             Ipv4InterfaceContainer ueIpIface;
-	             ueIpIface = epcHelper->AssignUeIpv4Address (NetDeviceContainer (mcUeDevs));
+	             ueIpIface = ngcHelper->AssignUeIpv4Address (NetDeviceContainer (mcUeDevs));
 	             // Assign IP address to UEs, and install applications
 	             for (uint32_t u = 0; u < ueNodes.GetN (); ++u)
 	             {
 	               Ptr<Node> ueNode = ueNodes.Get (u);
 	               // Set the default gateway for the UE
 	               Ptr<Ipv4StaticRouting> ueStaticRouting = ipv4RoutingHelper.GetStaticRouting (ueNode->GetObject<Ipv4> ());
-	               ueStaticRouting->SetDefaultRoute (epcHelper->GetUeDefaultGatewayAddress (), 1);
+	               ueStaticRouting->SetDefaultRoute (ngcHelper->GetUeDefaultGatewayAddress (), 1);
 	             }
 
 	             // Add X2 interfaces

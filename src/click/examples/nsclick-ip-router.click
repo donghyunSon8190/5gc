@@ -54,7 +54,7 @@ rt[0] -> Discard;
 // Forwarding path for eth0
 rt[1] -> DropBroadcasts
     -> cp0 :: PaintTee(1)
-    -> gio0 :: IPGWOptions($myaddr1)
+    -> gio0 :: IUPFOptions($myaddr1)
     -> FixIPSrc($myaddr1)
     -> dt0 :: DecIPTTL
     -> fr0 :: IPFragmenter(1500)
@@ -67,7 +67,7 @@ cp0[1] -> ICMPError($myaddr1, redirect, host) -> rt;
 // Forwarding path for eth1
 rt[2] -> DropBroadcasts
     -> cp1 :: PaintTee(2)
-    -> gio1 :: IPGWOptions($myaddr2)
+    -> gio1 :: IUPFOptions($myaddr2)
     -> FixIPSrc($myaddr2)
     -> dt1 :: DecIPTTL
     -> fr1 :: IPFragmenter(1500)
